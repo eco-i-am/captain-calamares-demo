@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>Captain Calamares System</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=League+Spartan:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell — left sidebar per surface (Admin HQ / Branch), topbar with surface switch, content panel.
+   Captain Calamares brand (from captaincalamaresph.com): sunshine yellow, royal blue, wave cyan, mascot orange. League Spartan body, chunky Lilita One headings. */
+:root{
+  --bg:#f3f6fd; --panel:#ffffff; --ink:#0b1f4d; --muted:#506089; --line:#d9e1f2;
+  --navy:#143f9e; --navy-ink:#ffffff; --navy-mute:#b4c8f5; --sea:#1c63d6; --sea-ink:#ffffff; --sea-soft:#dce8fc;
+  --orange:#ffdf00; --orange-soft:#fff7bf; --mascot:#ff8a1f; --wave:#19c3f0; --good:#1f8a4c; --good-soft:#dff3e6; --warn:#a85f00; --warn-soft:#fdf0d2;
+  --bad:#c23b3b; --bad-soft:#fbe3e3; --info:#2a64b5; --info-soft:#e0ebfa;
+  --f-display:'Lilita One','Trebuchet MS',sans-serif; --f-body:'League Spartan',system-ui,sans-serif; --f-mono:'DM Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#07112b; --panel:#0f1d42; --ink:#eaf0ff; --muted:#9fb0d8; --line:#22356b;
+  --navy:#091a45; --navy-ink:#eaf0ff; --navy-mute:#8da4d9; --sea:#5b9bff; --sea-ink:#07112b; --sea-soft:#14275a; --orange:#ffdf00; --orange-soft:#3a3410;
+  --good:#4cc47f; --good-soft:#12361f; --warn:#e6a43c; --warn-soft:#3a2d10; --bad:#ef7676; --bad-soft:#3d1a1a; --info:#6ea4ee; --info-soft:#152d4d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#07112b; --panel:#0f1d42; --ink:#eaf0ff; --muted:#9fb0d8; --line:#22356b;
+  --navy:#091a45; --navy-ink:#eaf0ff; --navy-mute:#8da4d9; --sea:#5b9bff; --sea-ink:#07112b; --sea-soft:#14275a; --orange:#ffdf00; --orange-soft:#3a3410;
+  --good:#4cc47f; --good-soft:#12361f; --warn:#e6a43c; --warn-soft:#3a2d10; --bad:#ef7676; --bad-soft:#3d1a1a; --info:#6ea4ee; --info-soft:#152d4d; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;font-weight:500;padding-left:0;padding-right:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);height:100%}
+.side{background:var(--navy);color:var(--navy-ink);display:flex;flex-direction:column;min-height:0;padding-left:max(0px,env(safe-area-inset-left,0px))}
+.brand{display:flex;gap:10px;align-items:center;padding:16px 16px 12px}
+.brand svg{flex:none}
+.brand b{font-family:var(--f-display);font-size:17px;line-height:1.05;display:block}
+.brand small{color:var(--navy-mute);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.nav{overflow:auto;padding:4px 10px 16px;flex:1}
+.nav h6{margin:16px 8px 6px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy-mute);font-weight:700}
+.nav button{display:flex;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:8px 10px;color:var(--navy-ink);gap:8px;align-items:center}
+.nav button:hover{background:rgba(255,255,255,.07)}
+.nav button[aria-current="page"]{background:var(--orange);color:#0b1f4d;font-weight:700}
+.nav button.dim{color:var(--navy-mute)}
+.nav .pill{margin-left:auto;font-size:10px;background:rgba(255,255,255,.14);border-radius:99px;padding:1px 7px}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:12px;padding:10px max(20px,env(safe-area-inset-right,0px)) 10px 20px;background:var(--panel);border-bottom:3px solid var(--orange);flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:7px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink)}
+.top .sp{flex:1}
+.who{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--sea);color:var(--sea-ink);display:grid;place-items:center;font-weight:700;font-size:12px}
+.themebtn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 10px;color:var(--muted)}
+.content{overflow:auto;padding:22px max(24px,env(safe-area-inset-right,0px)) 40px 24px;flex:1;min-height:0}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-family:var(--f-display);font-size:26px;margin:0;font-weight:600;text-wrap:balance}
+.ph p{margin:3px 0 0;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:8px 14px;font-weight:600}
+.btn:hover{border-color:var(--sea)}
+.btn.pri{background:var(--orange);border-color:var(--orange);color:#1a1205}
+.btn.sea{background:var(--sea);border-color:var(--sea);color:var(--sea-ink)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card h3{margin:0 0 12px;font-size:14px;font-weight:700}
+.kpi small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.kpi b{display:block;font-family:var(--f-display);font-size:28px;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.up{color:var(--good)} .down{color:var(--bad)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700}
+.c-good{background:var(--good-soft);color:var(--good)} .c-warn{background:var(--warn-soft);color:var(--warn)} .c-bad{background:var(--bad-soft);color:var(--bad)}
+.c-info{background:var(--info-soft);color:var(--info)} .c-sea{background:var(--sea-soft);color:var(--sea)} .c-mute{background:var(--bg);color:var(--muted)}
+.field{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;color:var(--ink);font:inherit;min-width:0}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 86px;gap:10px;align-items:center}
+.bar i{display:block;height:12px;border-radius:6px;background:var(--bg);overflow:hidden}
+.bar i u{display:block;height:100%;background:var(--sea);border-radius:6px}
+.bar:first-child i u{background:var(--orange)}
+.alert{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.alert:last-child{border-bottom:0}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none}
+/* POS */
+.pos{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cats button{border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:6px 14px;font-weight:600}
+.cats button[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.prod{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden}
+.prod:hover{border-color:var(--orange)}
+.prod .ph2{height:74px;display:grid;place-items:center;font-size:34px;background:var(--orange-soft)}
+.prod div.t{padding:10px 12px}
+.prod b{display:block;font-size:13.5px}
+.prod span{color:var(--muted);font-size:12.5px}
+.cart{position:sticky;top:0}
+.line{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.line small{color:var(--muted);display:block}
+.qty{display:inline-flex;align-items:center;gap:6px}
+.qty button{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:var(--bg);padding:0}
+.tot{display:flex;justify-content:space-between;padding:4px 0}
+.tot.big{font-family:var(--f-display);font-size:22px;font-weight:600;padding-top:10px}
+/* clock */
+.clock{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:14px;align-items:start}
+.pin{text-align:center}
+.clk{font-family:var(--f-display);font-size:42px;font-weight:600;font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:10px;justify-content:center;margin:12px 0}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--sea)}
+.dots i.on{background:var(--sea)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:260px;margin:0 auto}
+.keys button{height:54px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:20px;font-weight:600;font-family:var(--f-display)}
+.keys button:active{background:var(--sea-soft)}
+.msg{min-height:44px;margin-top:12px;border-radius:10px;padding:10px;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--navy-ink);padding:10px 18px;border-radius:10px;font-weight:600;z-index:30;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.stepper{display:flex;gap:0;overflow-x:auto;margin:4px 0 14px}
+.stepper span{flex:none;font-size:11px;padding:4px 10px;background:var(--bg);color:var(--muted);border:1px solid var(--line);margin-right:-1px;white-space:nowrap}
+.stepper span.on{background:var(--sea);color:#fff;border-color:var(--sea);font-weight:700}
+.stepper span.done{background:var(--sea-soft);color:var(--sea)}
+.logo{display:block;background-image:url(data:image/png;base64,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);background-repeat:no-repeat;background-position:center;background-size:contain}
+.plate{background-color:var(--orange);border-radius:12px;background-origin:content-box;padding:8px;box-sizing:content-box}
+.viewf{position:relative;aspect-ratio:4/3;max-width:300px;margin:0 auto;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#1b2f66,#0b1636)}
+.viewf svg{position:absolute;inset:0;width:100%;height:100%}
+.viewf .rec{position:absolute;left:10px;top:8px;color:#ff6b6b;font-size:11px;font-weight:700;letter-spacing:.08em}
+.viewf.flash::after{content:"";position:absolute;inset:0;background:#fff;animation:fl .45s ease-out forwards}
+@keyframes fl{from{opacity:.95}to{opacity:0}}
+.thumb{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sea-soft);color:var(--sea);font-size:10px;font-weight:700;margin-right:4px;border:2px solid var(--sea)}
+.thumb.off{background:none;border:2px dashed var(--line);color:var(--muted)}
+/* Login */
+.login{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--bg)}
+.login[hidden]{display:none}
+.lbrand{background:repeating-conic-gradient(from 0deg at 50% 70%,#ffe51a 0 7.5deg,#ffd800 7.5deg 15deg);color:#0b1f4d;padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.lbrand .brand b{color:#0b1f4d}.lbrand .brand small{color:#143f9e}
+.lbrand h2{font-family:var(--f-display);font-size:48px;line-height:1.02;margin:12px 0 14px;font-weight:400;text-wrap:balance;color:#ffc83d;-webkit-text-stroke:9px #1646b0;paint-order:stroke fill;text-shadow:0 5px 0 #0e2f7a;letter-spacing:.01em}
+.lbrand p{color:#12388f;max-width:36ch;margin:0;font-weight:600;position:relative}
+.lbrand .hero{position:relative;z-index:1;padding-bottom:70px}
+.lbrand .waves{position:absolute;left:0;right:0;bottom:0;opacity:.9;pointer-events:none}
+.lform{display:grid;place-items:center;padding:32px max(24px,env(safe-area-inset-right,0px)) 32px 24px;overflow:auto}
+.lform form{width:100%;max-width:380px;display:grid;gap:14px}
+.lform h1{font-size:28px}
+.lform label{display:grid;gap:6px;font-weight:600;font-size:13px}
+.lform .field{width:100%;padding:11px 12px}
+.lerr{color:var(--bad);font-weight:600;min-height:18px;margin:0}
+.demo{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:8px}
+.demo small{color:var(--muted)}
+@media (max-width:860px){
+  .login{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .lbrand{padding:20px 16px 56px}.lbrand h2{font-size:28px}.lbrand p{display:none}
+  .lform{place-items:start center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .side{flex-direction:row;align-items:center;overflow-x:auto;padding-right:8px}
+  .brand{padding:8px 12px;flex:none}.brand small{display:none}
+  .nav{display:flex;gap:4px;overflow-x:auto;padding:6px 8px;flex:1}.nav h6{display:none}.nav button{white-space:nowrap;width:auto}
+  .pos,.clock{grid-template-columns:1fr}.cart{position:static}
+  .bar{grid-template-columns:90px minmax(0,1fr) 70px}
+  .content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <section class="lbrand">
+    <div class="brand" style="padding:0;flex-direction:column;align-items:flex-start;gap:6px"><span class="logo" role="img" aria-label="Captain Calamares" style="width:260px;height:102px"></span><small>Operations system</small></div>
+    <div class="hero"><h2>Come aboard, taste the difference</h2><p>Sales, stock, orders and staff hours for every branch, in one place.</p></div>
+    <svg class="waves" viewBox="0 0 600 90" preserveAspectRatio="none" height="90" aria-hidden="true"><path d="M0 40 Q50 15 100 40 T200 40 T300 40 T400 40 T500 40 T600 40 V90 H0Z" fill="#0a8fd6"/><path d="M0 60 Q50 38 100 60 T200 60 T300 60 T400 60 T500 60 T600 60 V90 H0Z" fill="#19c3f0"/></svg>
+  </section>
+  <section class="lform">
+    <form id="loginForm" novalidate>
+      <div><h1>Sign in</h1><p style="color:var(--muted);margin:4px 0 0">Use the account your head office gave you.</p></div>
+      <label for="lEmail">Email<input class="field" id="lEmail" type="email" autocomplete="username" placeholder="you@captaincalamares.ph"></label>
+      <label for="lPass">Password<input class="field" id="lPass" type="password" autocomplete="current-password" placeholder="Password"></label>
+      <div class="row" style="justify-content:space-between"><label style="display:flex;grid-template-columns:none;gap:8px;font-weight:500" for="lRem"><input type="checkbox" id="lRem" checked> Keep me signed in</label><a href="#" id="lForgot" style="color:var(--sea);font-weight:600">Forgot password?</a></div>
+      <p class="lerr" id="lErr" role="alert"></p>
+      <button class="btn pri" type="submit" style="padding:12px">Sign in</button>
+      <div class="demo"><small>Demo accounts (any password works)</small>
+        <button class="btn" type="button" data-demo="admin@captaincalamares.ph">Sign in as HQ admin</button>
+        <button class="btn" type="button" data-demo="cainta@captaincalamares.ph">Sign in as Cainta branch manager</button>
+        <button class="btn" type="button" data-demo="cashier@captaincalamares.ph">Sign in as cashier (POS only)</button>
+        <button class="btn" type="button" data-demo="employee@captaincalamares.ph">Sign in as employee (time in / out only)</button>
+      </div>
+    </form>
+  </section>
+</div>
+<div class="app" id="app">
+  <aside class="side">
+    <div class="brand" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="logo plate" role="img" aria-label="Captain Calamares" style="width:150px;height:59px"></span><small id="surfLabel">HQ Admin</small></div>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <div class="seg" id="surfSeg" role="group" aria-label="Switch view">
+        <button id="sA" aria-pressed="true">Admin (HQ)</button>
+        <button id="sB" aria-pressed="false">Branch</button>
+      </div>
+      <span class="chip c-sea" id="branchTag" hidden>Cainta, Sto. Niño</span>
+      <span class="sp"></span>
+      <span class="mono" id="topClock"></span>
+      <button class="themebtn" id="themeBtn" aria-label="Toggle theme">Theme</button>
+      <div class="who"><span class="av" id="av">HQ</span><span id="whoName">Head Office</span></div>
+      <button class="themebtn" id="signOut">Sign out</button>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+<div id="toastHost"></div>
+
+<script>
+const peso = n => '₱' + Number(n).toLocaleString('en-PH',{minimumFractionDigits:0,maximumFractionDigits:2});
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2,'0');
+const fmt = d => { let h=d.getHours(), m=d.getMinutes(); return (h%12||12)+':'+pad(m)+' '+(h<12?'AM':'PM'); };
+
+/* ---------- Sample data (examples for the demo) ---------- */
+const branches = [
+  {n:'Cainta, Sto. Niño', sales:184200, po:12, st:'Open'},
+  {n:'Marikina Riverbanks', sales:152750, po:9, st:'Open'},
+  {n:'Antipolo Hinulugang', sales:121400, po:7, st:'Open'},
+  {n:'Taytay Greenland', sales:96300, po:5, st:'Open'},
+  {n:'Pasig Kapitolyo', sales:64800, po:3, st:'Opening soon'},
+];
+const poStatuses = ['Requested','Pending','To pay','Processing','For pick-up','In-transit','Picked-up','Delivered','Completed'];
+const stChip = {Requested:'c-mute',Pending:'c-warn','To pay':'c-bad',Processing:'c-info','For pick-up':'c-info','In-transit':'c-sea','Picked-up':'c-sea',Delivered:'c-good',Completed:'c-good'};
+let POs = [
+  {no:'PO-2611-0042',br:'Cainta, Sto. Niño',d:'Nov 19',items:14,amt:38450,st:'Requested'},
+  {no:'PO-2611-0041',br:'Marikina Riverbanks',d:'Nov 19',items:9,amt:24180,st:'Pending'},
+  {no:'PO-2611-0039',br:'Antipolo Hinulugang',d:'Nov 18',items:11,amt:29900,st:'To pay'},
+  {no:'PO-2611-0037',br:'Taytay Greenland',d:'Nov 17',items:6,amt:15720,st:'Processing'},
+  {no:'PO-2611-0034',br:'Cainta, Sto. Niño',d:'Nov 16',items:12,amt:33600,st:'In-transit'},
+  {no:'PO-2611-0031',br:'Pasig Kapitolyo',d:'Nov 15',items:20,amt:61250,st:'Delivered'},
+  {no:'PO-2611-0027',br:'Marikina Riverbanks',d:'Nov 13',items:8,amt:20400,st:'Completed'},
+];
+const emps = [
+  {id:1,n:'Maria Santos',role:'Cashier',br:'Cainta, Sto. Niño',pin:'482910'},
+  {id:2,n:'Jose Reyes',role:'Kitchen',br:'Cainta, Sto. Niño',pin:'173025'},
+  {id:3,n:'Ana Cruz',role:'Crew',br:'Cainta, Sto. Niño',pin:'906431'},
+  {id:4,n:'Paolo Mendoza',role:'Manager',br:'Cainta, Sto. Niño',pin:'251867'},
+  {id:5,n:'Liza Ramos',role:'Cashier',br:'Marikina Riverbanks',pin:'640192'},
+  {id:6,n:'Ben Aquino',role:'Crew',br:'Marikina Riverbanks',pin:'318476'},
+  {id:7,n:'Carla Dizon',role:'Crew',br:'Antipolo Hinulugang',pin:'759204'},
+  {id:8,n:'Rico Bautista',role:'Crew',br:'Cainta, Sto. Niño',pin:'384512'},
+  {id:9,n:'Joy Villanueva',role:'Cashier',br:'Cainta, Sto. Niño',pin:'527390'},
+  {id:10,n:'Gina Torres',role:'Manager',br:'Marikina Riverbanks',pin:'861043'},
+  {id:11,n:'Noel Garcia',role:'Manager',br:'Taytay Greenland',pin:'492718'},
+  {id:12,n:'Tessa Navarro',role:'Manager',br:'Antipolo Hinulugang',pin:'735826'},
+  {id:13,n:'Ramon Flores',role:'Manager',br:'Pasig Kapitolyo',pin:'218659'},
+  {id:14,n:'Isabel Chua',role:'Operations',br:'HQ',pin:'604375'},
+  {id:15,n:'Dennis Uy',role:'Accountant',br:'HQ',pin:'913284'},
+  {id:16,n:'Karen Lim',role:'Purchasing',br:'HQ',pin:'457102'},
+];
+const T = (h,m)=>{const d=new Date();d.setHours(h,m,0,0);return d};
+let punches = [
+  {e:1,date:'Nov 19',in:T(8,52),out:null,flag:''},
+  {e:2,date:'Nov 19',in:T(8,58),out:null,flag:''},
+  {e:4,date:'Nov 19',in:T(8,41),out:null,flag:''},
+  {e:5,date:'Nov 19',in:T(9,3),out:null,flag:''},
+  {e:6,date:'Nov 19',in:T(9,17),out:null,flag:'Late'},
+  {e:1,date:'Nov 18',in:T(8,49),out:T(17,34),flag:''},
+  {e:2,date:'Nov 18',in:T(8,55),out:T(17,31),flag:''},
+  {e:3,date:'Nov 18',in:T(9,2),out:null,flag:'Missing time out'},
+  {e:4,date:'Nov 18',in:T(8,40),out:T(18,10),flag:''},
+  {e:5,date:'Nov 18',in:T(9,0),out:T(17,58),flag:''},
+  {e:7,date:'Nov 18',in:T(8,30),out:T(17,2),flag:'Edited by manager'},
+];
+// n=name, p=price, cost=ingredient cost, st=stock (portions), on=active
+const prods = [
+  {id:1,n:'Calamari Classic',sku:'CAL-001',p:149,cost:58,c:'Calamari',e:'🦑',st:86,on:true,ad:'Extra dip, Large size'},
+  {id:2,n:'Calamari Spicy',sku:'CAL-002',p:159,cost:61,c:'Calamari',e:'🌶️',st:74,on:true,ad:'Extra dip, Large size'},
+  {id:3,n:'Calamari Garlic Butter',sku:'CAL-003',p:169,cost:66,c:'Calamari',e:'🧈',st:52,on:true,ad:'Extra dip, Large size'},
+  {id:4,n:'Calamari Cheese Dust',sku:'CAL-004',p:165,cost:63,c:'Calamari',e:'🧀',st:9,on:true,ad:'Extra dip, Large size'},
+  {id:5,n:'Calamari Salted Egg',sku:'CAL-005',p:179,cost:72,c:'Calamari',e:'🥚',st:40,on:true,ad:'Extra dip, Large size'},
+  {id:6,n:'Calamari Bucket',sku:'SET-001',p:299,cost:121,c:'Sets',e:'🪣',st:35,on:true,ad:'Choose 2 flavors'},
+  {id:7,n:'Captain’s Platter',sku:'SET-002',p:449,cost:176,c:'Sets',e:'⚓',st:22,on:true,ad:'Add rice'},
+  {id:8,n:'Solo Meal (Calamari + Rice + Drink)',sku:'SET-003',p:189,cost:77,c:'Sets',e:'🍱',st:60,on:true,ad:'Upgrade drink'},
+  {id:9,n:'Crew Feast (for 4)',sku:'SET-004',p:799,cost:318,c:'Sets',e:'🚢',st:12,on:false,ad:'—'},
+  {id:10,n:'Fish Bites',sku:'BIT-001',p:119,cost:44,c:'Bites',e:'🐟',st:64,on:true,ad:'Extra dip'},
+  {id:11,n:'Shrimp Poppers',sku:'BIT-002',p:139,cost:55,c:'Bites',e:'🍤',st:48,on:true,ad:'Extra dip'},
+  {id:12,n:'Squid Balls (10 pcs)',sku:'BIT-003',p:99,cost:36,c:'Bites',e:'⚪',st:70,on:true,ad:'Extra dip'},
+  {id:13,n:'Fries',sku:'BIT-004',p:69,cost:21,c:'Bites',e:'🍟',st:120,on:true,ad:'Cheese powder'},
+  {id:14,n:'Garlic Mayo Dip',sku:'DIP-001',p:20,cost:6,c:'Dips',e:'🥣',st:200,on:true,ad:'—'},
+  {id:15,n:'Sweet Chili Dip',sku:'DIP-002',p:20,cost:5,c:'Dips',e:'🌶️',st:180,on:true,ad:'—'},
+  {id:16,n:'Spicy Vinegar Dip',sku:'DIP-003',p:20,cost:4,c:'Dips',e:'🫙',st:150,on:true,ad:'—'},
+  {id:17,n:'Iced Tea',sku:'DRK-001',p:49,cost:12,c:'Drinks',e:'🧋',st:95,on:true,ad:'Size, Less sugar'},
+  {id:18,n:'Calamansi Juice',sku:'DRK-002',p:59,cost:15,c:'Drinks',e:'🍋',st:7,on:true,ad:'Size, Less sugar'},
+  {id:19,n:'Bottled Water',sku:'DRK-003',p:25,cost:9,c:'Drinks',e:'💧',st:140,on:true,ad:'—'},
+  {id:20,n:'Steamed Rice',sku:'SID-001',p:29,cost:8,c:'Sides',e:'🍚',st:160,on:true,ad:'Garlic rice'},
+];
+
+/* ---------- State ---------- */
+let surface='admin', page='a-dash', role='admin'; // admin | manager | cashier | employee
+const adminNav=[
+ ['Sales',[['a-dash','Dashboard']]],
+ ['Branch',[['a-br','Branch List'],['a-mem','Branch Members'],['a-po','Branch PO','3'],['a-rec','Receivables'],['a-cust','Branch Customer'],['a-ann','Announcements'],['a-train','Training']]],
+ ['POS System',[['a-prod','Product'],['a-addon','Product Add-Ons'],['a-cat','Product Category'],['a-fb','Feedbacks']]],
+ ['Inventory',[['a-inv','Item Inventory'],['a-item','Item'],['a-sup','Supplier'],['a-spo','Supplier PO']]],
+ ['Help & Support',[['a-chat','Support Chat','2']]],
+ ['Admin Employees',[['a-emp','Employee List'],['a-att','Employee’s Report','NEW']]],
+ ['Accounting',[['a-exp','Expenses']]],
+ ['Admin Tools',[['a-rep','Reports'],['a-user','User Management'],['a-log','Logs'],['a-set','Settings']]],
+];
+const branchNav=[
+ ['Sales',[['b-dash','Dashboard']]],
+ ['POS System',[['b-pos','Point of Sale'],['b-ord','Order List'],['b-prod','Product List'],['b-fb','Feedback List'],['b-ref','Refund Order']]],
+ ['Inventory',[['b-inv','Item Inventory'],['b-po','Purchase Order'],['b-pay','Payables'],['b-out','Outsource']]],
+ ['Reports',[['b-rep','Reports'],['b-cash','Cashier Reports']]],
+ ['Branch',[['b-cio','Cash-In / Cash-Out'],['b-exp','Branch Expenses'],['b-train','Training']]],
+ ['Employees',[['b-clock','Time In / Time Out','NEW'],['b-emp','Employee List'],['b-att','Employee’s Report']]],
+ ['Admin Tools',[['b-set','Settings'],['b-user','User Management']]],
+];
+const live = new Set(['b-ord','b-ref','a-br','a-mem','a-prod','b-prod','a-dash','a-po','a-att','a-emp','b-dash','b-pos','b-clock','b-att','b-emp','b-po']);
+
+function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
+
+function renderNav(){
+  const nav = role==='cashier'?[['POS System',[['b-pos','Point of Sale'],['b-ord','Order List'],['b-ref','Refund Order']]]]:role==='employee'?[['Employees',[['b-clock','Time In / Time Out']]]]:surface==='admin'?adminNav:branchNav;
+  $('#nav').innerHTML = nav.map(([h,items])=>`<h6>${h}</h6>`+items.map(([id,l,b])=>
+    `<button data-p="${id}" ${id===page?'aria-current="page"':''} class="${live.has(id)?'':'dim'}">${l}${b?`<span class="pill">${b}</span>`:''}</button>`).join('')).join('');
+  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.p));
+  $('#surfLabel').textContent = surface==='admin'?'HQ Admin':'Branch';
+  $('#sA').setAttribute('aria-pressed',surface==='admin');
+  $('#sB').setAttribute('aria-pressed',surface==='branch');
+  $('#branchTag').hidden = surface==='admin';
+  const who={admin:['HQ','Head Office'],manager:['PM','Paolo (Manager)'],cashier:['MS','Maria (Cashier)'],employee:['AC','Ana (Crew)']}[role];
+  $('#av').textContent = who[0];
+  $('#whoName').textContent = who[1];
+}
+function go(p){pending=null;page=p;renderNav();render();$('#content').scrollTop=0}
+function setSurface(s){surface=s;go(s==='admin'?'a-dash':'b-dash')}
+$('#sA').onclick=()=>setSurface('admin'); $('#sB').onclick=()=>setSurface('branch');
+$('#themeBtn').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=dark?'light':'dark'};
+function tick(){$('#topClock').textContent=new Date().toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric'})+' · '+fmt(new Date());const c=$('#liveClock');if(c){const d=new Date();c.textContent=(d.getHours()%12||12)+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+' '+(d.getHours()<12?'AM':'PM')}}
+setInterval(tick,1000);
+
+/* ---------- Pages ---------- */
+const head=(t,s,act='')=>`<div class="ph"><div><h1>${t}</h1>${s?`<p>${s}</p>`:''}</div><div class="row">${act}</div></div>`;
+const kpi=(l,v,s)=>`<div class="card kpi"><small>${l}</small><b>${v}</b><span>${s}</span></div>`;
+
+function pDashA(){
+  const max=Math.max(...branches.map(b=>b.sales));
+  const total=branches.reduce((a,b)=>a+b.sales,0);
+  const onNow=punches.filter(p=>p.date==='Nov 19'&&!p.out).length;
+  return head('Dashboard','HQ overview · all branches · today is Nov 19, 2026','<button class="btn">This week ▾</button><button class="btn pri" data-t="Report exported">Export</button>')+
+  `<div class="grid g4">${kpi('Total sales (week)',peso(total),'<span class="up">▲ 8.4%</span> vs last week')}${kpi('Overdue invoices',peso(47320),'3 branches · oldest 9 days')}${kpi('Branch POs waiting','3','1 needs approval today')}${kpi('Staff clocked in',onNow,'across '+branches.length+' branches')}</div>
+  <div class="grid g2" style="margin-top:14px">
+   <div class="card"><h3>Branch performance (week)</h3><div class="bars">${branches.map(b=>`<div class="bar"><span>${b.n.split(',')[0].split(' ')[0]}</span><i><u style="width:${b.sales/max*100}%"></u></i><b class="mono" style="text-align:right">${peso(b.sales)}</b></div>`).join('')}</div></div>
+   <div class="card"><h3>System alerts</h3>
+    <div class="alert"><span class="dot" style="background:var(--bad)"></span><div><b>Ana Cruz did not time out</b> yesterday<br><small style="color:var(--muted)">Cainta · flagged for manager review</small></div></div>
+    <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>Invoice INV-0128 overdue</b> · Taytay Greenland ${peso(15720)}<br><small style="color:var(--muted)">Due Nov 10</small></div></div>
+    <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>Low stock at HQ:</b> squid rings (frozen) · 18 kg left<br><small style="color:var(--muted)">Reorder point 40 kg</small></div></div>
+    <div class="alert"><span class="dot" style="background:var(--info)"></span><div><b>Pasig Kapitolyo</b> finished setup and is ready to open<br><small style="color:var(--muted)">Nov 19</small></div></div>
+   </div></div>`;
+}
+
+let poFilter='All', poQ='';
+function pPO(){
+  const rows=POs.filter(p=>(poFilter==='All'||p.st===poFilter)&&(!poQ||(p.no+p.br).toLowerCase().includes(poQ.toLowerCase())));
+  return head('Branch PO','Branches order stock from HQ. Approve, track and print.','<button class="btn" data-t="Exported to Excel">Export Excel</button><button class="btn pri" data-t="New PO form would open">+ New PO</button>')+
+  `<div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="poq" placeholder="Search PO number or branch" value="${poQ}" aria-label="Search" style="flex:1;min-width:200px"><select class="field" id="pof" aria-label="Status">${['All',...poStatuses].map(s=>`<option ${s===poFilter?'selected':''}>${s}</option>`).join('')}</select></div>
+  <div class="tw"><table><thead><tr><th>PO number</th><th>Branch</th><th>Date</th><th class="num">Items</th><th class="num">Total</th><th>Status</th><th></th></tr></thead><tbody>
+  ${rows.map(p=>`<tr><td class="mono">${p.no}</td><td>${p.br}</td><td>${p.d}</td><td class="num">${p.items}</td><td class="num">${peso(p.amt)}</td><td><span class="chip ${stChip[p.st]}">${p.st}</span></td><td>${p.st==='Requested'?`<button class="btn sm sea" data-ap="${p.no}">Approve</button> <button class="btn sm" data-t="PO rejected">Reject</button>`:`<button class="btn sm" data-t="Print preview opens">Print</button>`}</td></tr>`).join('')||'<tr><td colspan="7" style="color:var(--muted)">No purchase orders match.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+
+let attBr='All';
+function th(on,w,e){const ini=e.n.split(' ').map(x=>x[0]).join('');return on?`<span class="thumb" title="Photo at time ${w} (sample)">${ini}</span>`:`<span class="thumb off" title="No photo at time ${w}">\u2013</span>`}
+function attTable(list,showBr){
+  const rows=punches.filter(p=>list.includes(p.e)).sort((a,b)=>(b.date.localeCompare(a.date))||(b.in-a.in));
+  const hrs=p=>p.out?((p.out-p.in)/36e5).toFixed(1)+' h':'<span style="color:var(--muted)">—</span>';
+  return `<div class="tw"><table><thead><tr><th>Employee</th>${showBr?'<th>Branch</th>':''}<th>Date</th><th>Time in</th><th>Time out</th><th>Photo</th><th class="num">Hours</th><th>Status</th></tr></thead><tbody>
+  ${rows.map(p=>{const e=emps.find(x=>x.id===p.e);const open=!p.out&&p.date==='Nov 19';
+   const chip=p.flag==='Missing time out'?'<span class="chip c-bad">Missing time out</span>':p.flag==='Late'?'<span class="chip c-warn">Late</span>':p.flag==='No photo'?'<span class="chip c-warn">No photo</span>':p.flag?`<span class="chip c-info">${p.flag}</span>`:open?'<span class="chip c-good">On shift</span>':'<span class="chip c-mute">Complete</span>';
+   return `<tr><td><b>${e.n}</b><br><small style="color:var(--muted)">${e.role}</small></td>${showBr?`<td>${e.br}</td>`:''}<td>${p.date}</td><td class="mono">${fmt(p.in)}</td><td class="mono">${p.out?fmt(p.out):'—'}</td><td>${th(p.phIn!==false,'in',e)}${p.out?th(p.phOut!==false,'out',e):''}</td><td class="num">${hrs(p)}</td><td>${chip}</td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+function pAttA(){
+  const brs=['All',...new Set(emps.map(e=>e.br))];
+  const ids=emps.filter(e=>attBr==='All'||e.br===attBr).map(e=>e.id);
+  const todays=punches.filter(p=>ids.includes(p.e)&&p.date==='Nov 19');
+  return head('Employee’s Report','Time in and time out for every employee, all branches','<button class="btn" data-t="Exported to Excel">Export Excel</button><button class="btn" data-t="Exported to PDF">Export PDF</button>')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Clocked in now',todays.filter(p=>!p.out).length,'of '+ids.length+' employees')}${kpi('Late today',todays.filter(p=>p.flag==='Late').length,'after 9:15 AM grace')}${kpi('Missing time out',punches.filter(p=>ids.includes(p.e)&&p.flag==='Missing time out').length,'needs manager fix')}${kpi('Manual edits',punches.filter(p=>ids.includes(p.e)&&p.flag==='Edited by manager').length,'kept in audit log')}</div>
+  <div class="card"><div class="row" style="margin-bottom:12px"><select class="field" id="attb" aria-label="Branch">${brs.map(b=>`<option ${b===attBr?'selected':''}>${b}</option>`).join('')}</select><span class="chip c-mute">Nov 18 – Nov 19</span></div>${attTable(ids,true)}</div>`;
+}
+let empQ='',empRole='All',empBr='All';
+function pEmp(){
+  const admin=surface==='admin';
+  const base=emps.filter(e=>admin||e.br==='Cainta, Sto. Niño');
+  const roles=['All',...new Set(base.map(e=>e.role))];
+  const brs=['All',...new Set(base.map(e=>e.br))];
+  const rows=base.filter(e=>(empRole==='All'||e.role===empRole)&&(!admin||empBr==='All'||e.br===empBr)&&(!empQ||e.n.toLowerCase().includes(empQ.toLowerCase())));
+  const today=e=>punches.find(x=>x.e===e.id&&x.date==='Nov 19');
+  const inNow=base.filter(e=>{const p=today(e);return p&&!p.out}).length;
+  return head('Employee List',admin?'HQ staff and every branch’s crew':'Crew at Cainta, Sto. Niño','<button class="btn pri" data-t="Add employee form opens">+ Add employee</button>')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Employees',base.length,admin?'across HQ and '+(brs.length-2)+' branches':'at this branch')}${kpi('Clocked in now',inNow,'from time in / time out')}${kpi('Managers',base.filter(e=>e.role==='Manager').length,'can correct punches')}${kpi('Cashiers',base.filter(e=>e.role==='Cashier').length,'can use the POS')}</div>
+  <div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="emq" placeholder="Search by name" value="${empQ}" aria-label="Search employees" style="flex:1;min-width:200px"><select class="field" id="emr" aria-label="Role">${roles.map(r=>`<option ${r===empRole?'selected':''}>${r}</option>`).join('')}</select>${admin?`<select class="field" id="emb" aria-label="Branch">${brs.map(b=>`<option ${b===empBr?'selected':''}>${b}</option>`).join('')}</select>`:''}</div>
+  <div class="tw"><table><thead><tr><th>Name</th><th>Role</th>${admin?'<th>Branch</th>':''}<th>Today</th><th></th></tr></thead><tbody>
+  ${rows.map(e=>{const p=today(e);const ini=e.n.split(' ').map(w=>w[0]).join('');return `<tr><td><span class="av" style="display:inline-grid;margin-right:10px;vertical-align:middle">${ini}</span><b>${e.n}</b></td><td>${e.role}</td>${admin?`<td>${e.br}</td>`:''}<td>${p?(p.out?`<span class="chip c-mute">Out ${fmt(p.out)}</span>`:`<span class="chip c-good">In since ${fmt(p.in)}</span>`):'<span class="chip c-mute">Not in</span>'}</td><td><button class="btn sm" data-t="Edit employee opens">Edit</button></td></tr>`}).join('')||'<tr><td colspan="5" style="color:var(--muted)">No employees match.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+
+const brInfo={
+ 'Cainta, Sto. Niño':{addr:'Brgy. Sto. Niño, Cainta, Rizal',mgr:'Paolo Mendoza',ph:'8646-4195',open:'Mar 2023',hrs:'9 AM – 6 PM',own:'Company-owned'},
+ 'Marikina Riverbanks':{addr:'Riverbanks Center, Marikina City',mgr:'Gina Torres',ph:'0917 555 0142',open:'Aug 2024',hrs:'10 AM – 9 PM',own:'Company-owned'},
+ 'Antipolo Hinulugang':{addr:'Hinulugang Taktak Rd, Antipolo, Rizal',mgr:'Tessa Navarro',ph:'0917 555 0177',open:'Jan 2025',hrs:'10 AM – 8 PM',own:'Franchise'},
+ 'Taytay Greenland':{addr:'Greenland Subd., Taytay, Rizal',mgr:'Noel Garcia',ph:'0917 555 0191',open:'Jun 2025',hrs:'9 AM – 7 PM',own:'Franchise'},
+ 'Pasig Kapitolyo':{addr:'Brgy. Kapitolyo, Pasig City',mgr:'Ramon Flores',ph:'0917 555 0123',open:'Dec 2026',hrs:'10 AM – 9 PM',own:'Franchise'},
+};
+let brQ='';
+function pBr(){
+  const rows=branches.filter(b=>!brQ||b.n.toLowerCase().includes(brQ.toLowerCase()));
+  const staff=n=>emps.filter(e=>e.br===n).length;
+  return head('Branch List','Create, edit and manage all branches','<button class="btn pri" data-t="New branch form opens">+ New branch</button>')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Branches',branches.length,branches.filter(b=>b.st==='Open').length+' open')}${kpi('Company-owned',branches.filter(b=>brInfo[b.n].own==='Company-owned').length,'run by HQ')}${kpi('Franchise',branches.filter(b=>brInfo[b.n].own==='Franchise').length,'franchisee-run')}${kpi('Staff in branches',emps.filter(e=>e.br!=='HQ').length,'with time in / time out')}</div>
+  <div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="brq" placeholder="Search branches" value="${brQ}" aria-label="Search branches" style="flex:1;min-width:200px"></div>
+  <div class="tw"><table><thead><tr><th>Branch</th><th>Address</th><th>Type</th><th>Manager</th><th>Hours</th><th class="num">Staff</th><th class="num">Sales (week)</th><th>Status</th><th></th></tr></thead><tbody>
+  ${rows.map(b=>{const i=brInfo[b.n];return `<tr><td><b>${b.n}</b><br><small style="color:var(--muted)">Since ${i.open} · ${i.ph}</small></td><td>${i.addr}</td><td><span class="chip ${i.own==='Franchise'?'c-info':'c-sea'}">${i.own}</span></td><td>${i.mgr}</td><td>${i.hrs}</td><td class="num">${staff(b.n)}</td><td class="num">${peso(b.sales)}</td><td><span class="chip ${b.st==='Open'?'c-good':'c-warn'}">${b.st}</span></td><td><button class="btn sm" data-t="Edit branch opens">Edit</button></td></tr>`}).join('')||'<tr><td colspan="9" style="color:var(--muted)">No branches match.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+const members=[
+ {n:'Rafael Dela Cruz',role:'Owner',br:'Antipolo Hinulugang',em:'raf@example.ph',last:'Today, 8:12 AM'},
+ {n:'Anne Villaroman',role:'Owner',br:'Taytay Greenland',em:'anne@example.ph',last:'Yesterday, 6:40 PM'},
+ {n:'Paolo Mendoza',role:'Manager',br:'Cainta, Sto. Niño',em:'cainta@captaincalamares.ph',last:'Today, 8:41 AM'},
+ {n:'Gina Torres',role:'Manager',br:'Marikina Riverbanks',em:'marikina@captaincalamares.ph',last:'Today, 9:05 AM'},
+ {n:'Tessa Navarro',role:'Manager',br:'Antipolo Hinulugang',em:'antipolo@captaincalamares.ph',last:'Nov 18, 5:50 PM'},
+ {n:'Noel Garcia',role:'Manager',br:'Taytay Greenland',em:'taytay@captaincalamares.ph',last:'Nov 17, 4:15 PM'},
+ {n:'Ramon Flores',role:'Manager',br:'Pasig Kapitolyo',em:'pasig@captaincalamares.ph',last:'Nov 15, 2:30 PM'},
+];
+function pMem(){
+  return head('Branch Members','Owners and managers assigned to each branch','<button class="btn pri" data-t="Invite member opens">+ Invite member</button>')+
+  `<div class="card tw"><table><thead><tr><th>Name</th><th>Role</th><th>Branch</th><th>Email</th><th>Last sign-in</th><th></th></tr></thead><tbody>${members.map(m=>`<tr><td><b>${m.n}</b></td><td><span class="chip ${m.role==='Owner'?'c-warn':'c-sea'}">${m.role}</span></td><td>${m.br}</td><td class="mono">${m.em}</td><td>${m.last}</td><td><button class="btn sm" data-t="Edit member opens">Edit</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function pDashB(){
+  const mine=emps.filter(e=>e.br==='Cainta, Sto. Niño').map(e=>e.id);
+  const on=punches.filter(p=>mine.includes(p.e)&&p.date==='Nov 19'&&!p.out).length;
+  const hours=[3,5,9,14,18,12,8,10,15,19,11,6];
+  const mx=Math.max(...hours);
+  return head('Dashboard','Cainta, Sto. Niño · today','<button class="btn pri" data-go="b-pos">Open POS</button>')+
+  `<div class="grid g4">${kpi('Sales today',peso(18640),'<span class="up">▲ 6%</span> vs last Thursday')}${kpi('Orders','124','avg '+peso(150)+' each')}${kpi('Cash on hand',peso(9420),'drawer open since 9:00 AM')}${kpi('Staff on shift',on+' of '+mine.length,'<a href="#" data-go="b-clock" style="color:var(--sea)">Open time in / out</a>')}</div>
+  <div class="grid g2" style="margin-top:14px"><div class="card"><h3>Orders per hour</h3><svg viewBox="0 0 360 140" width="100%" role="img" aria-label="Orders per hour, 9 AM to 8 PM, peak 19 orders at 6 PM">${hours.map((h,i)=>`<rect x="${i*30+6}" y="${120-h/mx*105}" width="22" height="${h/mx*105}" rx="4" fill="${h===mx?'var(--orange)':'var(--sea)'}"/>`).join('')}${[9,12,3,6].map((t,i)=>`<text x="${[0,3,6,9][i]*30+17}" y="136" text-anchor="middle" font-size="10" fill="var(--muted)">${t}${[9,12,3,6][i]>=9?'a':'p'}</text>`).join('')}</svg></div>
+  <div class="card"><h3>Profit &amp; loss (today)</h3><div class="tot"><span>Revenue</span><b>${peso(18640)}</b></div><div class="tot"><span>Cost of goods</span><b>${peso(7230)}</b></div><div class="tot"><span>Expenses</span><b>${peso(1850)}</b></div><div class="tot big"><span>Net</span><b class="up">${peso(9560)}</b></div></div></div>`;
+}
+
+let cart=[], cat='All', orderType='Dine-in';
+function pPOS(){
+  const cats=['All',...new Set(prods.map(p=>p.c))];
+  const list=prods.filter(p=>p.on&&(cat==='All'||p.c===cat));
+  const sub=cart.reduce((a,l)=>a+l.p*l.q,0);
+  return head('Point of Sale','Cainta, Sto. Niño · Cashier: Maria Santos','<span class="chip c-good">Online</span>')+
+  `<div class="pos"><div><div class="cats">${cats.map(c=>`<button data-cat="${c}" aria-pressed="${c===cat}">${c}</button>`).join('')}</div>
+  <div class="prods">${list.map(p=>`<button class="prod" data-add="${p.id}"><div class="ph2">${p.e}</div><div class="t"><b>${p.n}</b><span>${peso(p.p)}</span></div></button>`).join('')}</div></div>
+  <div class="card cart"><h3>Current order</h3>
+   <div class="seg" style="margin-bottom:10px;width:100%">${['Dine-in','Takeout','Delivery'].map(o=>`<button style="flex:1" data-ot="${o}" aria-pressed="${o===orderType}">${o}</button>`).join('')}</div>
+   ${cart.length?cart.map(l=>`<div class="line"><div><b>${l.n}</b><small>${peso(l.p)} each</small></div><div class="qty"><button data-q="${l.id}:-1" aria-label="Less">−</button><b>${l.q}</b><button data-q="${l.id}:1" aria-label="More">+</button></div></div>`).join(''):'<p style="color:var(--muted);margin:14px 0">Tap a product to start an order.</p>'}
+   <div class="tot" style="margin-top:8px"><span>Subtotal</span><span>${peso(sub)}</span></div>
+   <div class="tot"><span>VAT included (12%)</span><span>${peso((sub-sub/1.12).toFixed(2))}</span></div>
+   <div class="tot big"><span>Total</span><span>${peso(sub)}</span></div>
+   <div class="row" style="margin-top:12px"><button class="btn" style="flex:1" data-clear>Clear</button><button class="btn pri" style="flex:2" data-charge ${cart.length?'':'disabled'}>Charge ${peso(sub)}</button></div></div></div>`;
+}
+
+let msg={t:'Enter your 6-digit PIN',k:'mute'}, pinBuf='', pending=null;
+function camCard(){
+  const open=punches.find(x=>x.e===pending.id&&x.date==='Nov 19'&&!x.out);
+  const act=open?'time out':'time in';
+  return `<div class="card pin"><small style="color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700">${open?'Time out':'Time in'} \u00b7 photo check</small>
+  <h3 style="margin:6px 0 12px;font-size:18px">Look at the camera, ${pending.n.split(' ')[0]}</h3>
+  <div class="viewf" role="img" aria-label="Simulated camera preview"><svg viewBox="0 0 200 150" aria-hidden="true"><circle cx="100" cy="62" r="26" fill="rgba(255,255,255,.28)"/><path d="M48 150c4-34 28-46 52-46s48 12 52 46z" fill="rgba(255,255,255,.2)"/><path d="M14 30V14h16M170 14h16v16M186 120v16h-16M30 136H14v-16" stroke="#ffdf00" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span class="rec">\u25cf LIVE</span></div>
+  <button class="btn pri" data-cam="snap" style="width:100%;padding:12px;margin-top:12px">Take photo and ${act}</button>
+  <button class="btn" data-cam="cancel" style="width:100%;margin-top:8px">Cancel</button>
+  <p style="color:var(--muted);font-size:12px;margin:12px 0 6px">Camera not working?</p>
+  <button class="btn sm" data-cam="skip">Continue without photo</button><p style="color:var(--muted);font-size:12px;margin:6px 0 0">The punch is flagged "No photo" for the manager.</p>
+  <p style="color:var(--muted);font-size:11.5px;margin:12px 0 0">Demo only: the camera is simulated. The real app uses the tablet camera.</p></div>`;
+}
+function finishPunch(photo){
+  const emp=pending;pending=null;
+  const open=punches.find(x=>x.e===emp.id&&x.date==='Nov 19'&&!x.out);
+  const now=new Date(),nm=emp.n.split(' ')[0];
+  if(open){open.out=now;open.phOut=photo;if(!photo&&!open.flag)open.flag='No photo';msg={t:'Goodbye, '+nm+'. Time out '+fmt(now)+(photo?'':' (no photo)'),k:photo?'good':'bad'}}
+  else{punches.push({e:emp.id,date:'Nov 19',in:now,out:null,flag:photo?'':'No photo',phIn:photo});msg={t:'Welcome, '+nm+'. Time in '+fmt(now)+(photo?'':' (no photo)'),k:photo?'good':'bad'}}
+  render();setTimeout(()=>{if(page==='b-clock'&&!pending){msg={t:'Enter your 6-digit PIN',k:'mute'};render()}},3500);
+}
+function pClock(){
+  const mine=emps.filter(e=>e.br==='Cainta, Sto. Niño');
+  const ids=mine.map(e=>e.id);
+  const mk={mute:'background:var(--bg);color:var(--muted)',good:'background:var(--good-soft);color:var(--good)',bad:'background:var(--bad-soft);color:var(--bad)'}[msg.k];
+  return head('Time In / Time Out','Branch tablet clock-in screen. Staff punch with their own PIN.','')+
+  `<div class="clock">${pending?camCard():`<div class="card pin"><small style="color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700">Cainta, Sto. Niño</small><div class="clk" id="liveClock">--</div>
+   <div class="dots" aria-label="PIN entered">${[0,1,2,3,4,5].map(i=>`<i class="${i<pinBuf.length?'on':''}"></i>`).join('')}</div>
+   <div class="keys">${[1,2,3,4,5,6,7,8,9,'C',0,'⌫'].map(k=>`<button data-k="${k}" aria-label="${k}">${k}</button>`).join('')}</div>
+   <div class="msg" style="${mk}" role="status">${msg.t}</div>
+   <p style="color:var(--muted);font-size:12px;margin:10px 0 0">Demo PINs: <span class="mono">482910</span> Maria · <span class="mono">173025</span> Jose · <span class="mono">906431</span> Ana · <span class="mono">640192</span> not this branch</p></div>`}
+   <div class="card"><h3>Who is in right now</h3><div class="row" style="margin-bottom:14px">${mine.map(e=>{const p=punches.find(x=>x.e===e.id&&x.date==='Nov 19'&&!x.out);return `<span class="chip ${p?'c-good':'c-mute'}">${e.n.split(' ')[0]} · ${p?'in '+fmt(p.in):'out'}</span>`}).join('')}</div>
+   ${role==='employee'?'':`<h3>Recent punches</h3>${attTable(ids,false)}`}</div></div>`;
+}
+function pAttB(){
+  const ids=emps.filter(e=>e.br==='Cainta, Sto. Niño').map(e=>e.id);
+  return head('Employee’s Report','Attendance for Cainta, Sto. Niño','<button class="btn" data-t="Exported to Excel">Export Excel</button>')+
+  `<div class="card">${attTable(ids,false)}<p style="color:var(--muted);font-size:12.5px;margin:12px 0 0">Corrections need a manager PIN and a reason. The original punch stays in the log.</p></div>`;
+}
+function pPOB(){
+  return head('Purchase Order','Order stock from HQ','<button class="btn pri" data-t="New PO form would open">+ New PO</button>')+
+  `<div class="card"><h3>PO-2611-0042 · ${peso(38450)}</h3><div class="stepper">${poStatuses.map((s,i)=>`<span class="${i<1?'done':i===1?'on':''}">${s}</span>`).join('')}</div><p style="color:var(--muted);margin:0">Waiting for HQ approval. You can edit or cancel until it is approved.</p></div>
+  <div class="card tw" style="margin-top:14px"><table><thead><tr><th>Item</th><th class="num">Qty</th><th>Unit</th><th class="num">Cost</th></tr></thead><tbody>
+  <tr><td>Squid rings, frozen</td><td class="num">20</td><td>kg</td><td class="num">${peso(9600)}</td></tr><tr><td>Breading mix</td><td class="num">12</td><td>kg</td><td class="num">${peso(3840)}</td></tr><tr><td>Cooking oil</td><td class="num">6</td><td>can</td><td class="num">${peso(7200)}</td></tr><tr><td>Garlic mayo dip, 1 L</td><td class="num">10</td><td>pc</td><td class="num">${peso(2900)}</td></tr><tr><td>Takeout boxes</td><td class="num">400</td><td>pc</td><td class="num">${peso(4800)}</td></tr></tbody></table></div>`;
+}
+function pSoon(){
+  const all=[...adminNav,...branchNav].flatMap(x=>x[1]);const l=(all.find(x=>x[0]===page)||[0,'This screen'])[1];
+  return head(l,'Planned in the full build. Not part of this demo.','')+`<div class="card"><p style="margin:0;color:var(--muted)">This screen follows the function list. The clickable screens in this prototype are Dashboard, Branch PO, Employee’s Report, Point of Sale and Time In / Time Out.</p></div>`;
+}
+
+let prodQ='',prodCat='All';
+function pProd(){
+  const admin=surface==='admin';
+  const cats=['All',...new Set(prods.map(p=>p.c))];
+  const rows=prods.filter(p=>(prodCat==='All'||p.c===prodCat)&&(!prodQ||(p.n+p.sku).toLowerCase().includes(prodQ.toLowerCase())));
+  const low=prods.filter(p=>p.on&&p.st<15).length;
+  return head(admin?'Product':'Product List',admin?'Main selling products for every branch POS':'Products available for sale at this branch',admin?'<button class="btn" data-t="Import from Excel / CSV">Import</button><button class="btn pri" data-t="Add product form opens">+ Add product</button>':'')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Products',prods.length,cats.length-1+' categories')}${kpi('Active',prods.filter(p=>p.on).length,'shown on the POS')}${kpi('Inactive',prods.filter(p=>!p.on).length,'hidden from the POS')}${kpi('Low stock',low,'under 15 portions')}</div>
+  <div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="prq" placeholder="Search by name or SKU" value="${prodQ}" aria-label="Search products" style="flex:1;min-width:200px"><select class="field" id="prc" aria-label="Category">${cats.map(c=>`<option ${c===prodCat?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div class="tw"><table><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th class="num">Price</th>${admin?'<th class="num">Cost</th><th class="num">Margin</th>':''}<th class="num">Stock</th><th>Add-ons</th><th>Status</th></tr></thead><tbody>
+  ${rows.map(p=>`<tr style="${p.on?'':'opacity:.55'}"><td><span style="font-size:20px;margin-right:8px">${p.e}</span><b>${p.n}</b></td><td class="mono">${p.sku}</td><td>${p.c}</td><td class="num">${peso(p.p)}</td>${admin?`<td class="num">${peso(p.cost)}</td><td class="num">${Math.round((p.p-p.cost)/p.p*100)}%</td>`:''}<td class="num">${p.st<15?`<span class="chip c-bad">${p.st} low</span>`:p.st}</td><td style="color:var(--muted)">${p.ad}</td><td><button class="btn sm ${p.on?'sea':''}" data-tg="${p.id}" aria-pressed="${p.on}">${p.on?'Active':'Inactive'}</button></td></tr>`).join('')||'<tr><td colspan="9" style="color:var(--muted)">No products match.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+
+/* ---------- Orders & refunds (branch) ---------- */
+const MGR_PIN='251867';
+let orders=[
+ {no:'ORD-1058',t:'2:41 PM',type:'Dine-in',pay:'Cash',cashier:'Maria Santos',st:'Paid',items:[{n:'Calamari Classic',q:2,p:149},{n:'Iced Tea',q:2,p:49},{n:'Garlic Mayo Dip',q:2,p:20}]},
+ {no:'ORD-1057',t:'2:22 PM',type:'Takeout',pay:'GCash',cashier:'Maria Santos',st:'Paid',items:[{n:'Calamari Bucket',q:1,p:299},{n:'Fries',q:1,p:69}]},
+ {no:'ORD-1056',t:'2:05 PM',type:'Delivery',pay:'GCash',cashier:'Joy Villanueva',st:'Paid',items:[{n:'Captain\u2019s Platter',q:1,p:449},{n:'Bottled Water',q:2,p:25}]},
+ {no:'ORD-1055',t:'1:48 PM',type:'Dine-in',pay:'Cash',cashier:'Maria Santos',st:'Part refunded',rl:[2],ref:59,items:[{n:'Calamari Spicy',q:1,p:159},{n:'Fish Bites',q:1,p:119},{n:'Calamansi Juice',q:1,p:59}]},
+ {no:'ORD-1054',t:'1:30 PM',type:'Takeout',pay:'Card',cashier:'Joy Villanueva',st:'Paid',items:[{n:'Solo Meal (Calamari + Rice + Drink)',q:2,p:189}]},
+ {no:'ORD-1053',t:'1:12 PM',type:'Dine-in',pay:'Cash',cashier:'Maria Santos',st:'Voided',items:[{n:'Calamari Garlic Butter',q:1,p:169}]},
+ {no:'ORD-1052',t:'12:55 PM',type:'Takeout',pay:'Cash',cashier:'Joy Villanueva',st:'Refunded',rl:[0],ref:139,items:[{n:'Shrimp Poppers',q:1,p:139}]},
+ {no:'ORD-1051',t:'12:40 PM',type:'Dine-in',pay:'GCash',cashier:'Maria Santos',st:'Paid',items:[{n:'Calamari Salted Egg',q:2,p:179},{n:'Steamed Rice',q:2,p:29},{n:'Iced Tea',q:1,p:49}]},
+];
+const oTot=o=>o.items.reduce((a,l)=>a+l.q*l.p,0);
+const ordChip={Paid:'c-good',Refunded:'c-bad','Part refunded':'c-warn',Voided:'c-mute'};
+let ordQ='',ordF='All',selOrd=null;
+function pOrd(){
+  const rows=orders.filter(o=>(ordF==='All'||o.st===ordF)&&(!ordQ||o.no.toLowerCase().includes(ordQ.toLowerCase())));
+  const net=orders.filter(o=>o.st!=='Voided').reduce((a,o)=>a+oTot(o)-(o.ref||0),0);
+  const refAmt=orders.reduce((a,o)=>a+(o.ref||0),0);
+  const sel=orders.find(o=>o.no===selOrd);
+  const detail=sel?`<div class="card" style="margin-bottom:14px;border-color:var(--sea)"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 style="margin:0">${sel.no} \u00b7 ${sel.t}</h3><button class="btn sm" data-vx>Close</button></div>
+   <div class="tw"><table><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Amount</th><th></th></tr></thead><tbody>${sel.items.map((l,i)=>`<tr><td>${l.n}</td><td class="num">${l.q}</td><td class="num">${peso(l.p)}</td><td class="num">${peso(l.q*l.p)}</td><td>${(sel.rl||[]).includes(i)?'<span class="chip c-bad">Refunded</span>':''}</td></tr>`).join('')}</tbody></table></div>
+   <div class="tot big"><span>Total</span><span>${peso(oTot(sel))}</span></div>${sel.ref?`<div class="tot"><span>Refunded</span><b class="down">\u2212${peso(sel.ref)}</b></div>`:''}
+   <div class="row" style="margin-top:8px"><span class="chip c-mute">${sel.type}</span><span class="chip c-mute">${sel.pay}</span><span style="color:var(--muted)">Cashier: ${sel.cashier}</span>${(sel.st==='Paid'||sel.st==='Part refunded')?`<button class="btn pri" data-rf="${sel.no}" style="margin-left:auto">Refund / void</button>`:''}</div></div>`:'';
+  return head('Order List','All orders today \u00b7 Cainta, Sto. Ni\u00f1o','<button class="btn" data-t="Exported to Excel">Export</button>')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Orders today',orders.length,'including refunds and voids')}${kpi('Net sales',peso(net),'after refunds')}${kpi('Refunded',peso(refAmt),orders.filter(o=>o.ref).length+' orders')}${kpi('Voided',orders.filter(o=>o.st==='Voided').length,'cancelled orders')}</div>`+detail+
+  `<div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="ordq" placeholder="Search order number" value="${ordQ}" aria-label="Search orders" style="flex:1;min-width:180px"><div class="cats" style="margin:0">${['All','Paid','Part refunded','Refunded','Voided'].map(f=>`<button data-of="${f}" aria-pressed="${f===ordF}">${f}</button>`).join('')}</div></div>
+   <div class="tw"><table><thead><tr><th>Order</th><th>Time</th><th>Type</th><th class="num">Items</th><th>Payment</th><th class="num">Total</th><th>Status</th><th></th></tr></thead><tbody>
+   ${rows.map(o=>`<tr><td class="mono">${o.no}</td><td>${o.t}</td><td>${o.type}</td><td class="num">${o.items.reduce((a,l)=>a+l.q,0)}</td><td>${o.pay}</td><td class="num">${peso(oTot(o))}</td><td><span class="chip ${ordChip[o.st]}">${o.st}</span></td><td><button class="btn sm" data-vo="${o.no}">View</button></td></tr>`).join('')||'<tr><td colspan="8" style="color:var(--muted)">No orders match.</td></tr>'}
+   </tbody></table></div></div>`;
+}
+
+let refSel=null,refChk=new Set(),refReason='Wrong order',refMode='Refund',refMsg=null,refQ='';
+function pRef(){
+  const cand=orders.filter(o=>(o.st==='Paid'||o.st==='Part refunded')&&(!refQ||o.no.toLowerCase().includes(refQ.toLowerCase())));
+  const o=orders.find(x=>x.no===refSel);
+  const lines=o?o.items.map((l,i)=>({...l,i})).filter(l=>!(o.rl||[]).includes(l.i)):[];
+  const amt=lines.filter(l=>refChk.has(l.i)).reduce((a,l)=>a+l.q*l.p,0);
+  const canVoid=o&&o.st==='Paid';
+  const mm=refMsg?`<div class="msg" style="${refMsg.k==='bad'?'background:var(--bad-soft);color:var(--bad)':'background:var(--good-soft);color:var(--good)'}" role="alert">${refMsg.t}</div>`:'';
+  const right=o?`<h3>2. What goes back</h3>
+   <div class="seg" style="margin-bottom:12px"><button data-rm="Refund" aria-pressed="${refMode==='Refund'}">Refund items</button><button data-rm="Void" aria-pressed="${refMode==='Void'}" ${canVoid?'':'disabled title="Only an untouched order can be voided"'}>Void whole order</button></div>
+   ${refMode==='Refund'?lines.map(l=>`<button class="line" style="width:100%;background:none;border:0;border-bottom:1px dashed var(--line);text-align:left;color:inherit" data-rl="${l.i}" aria-pressed="${refChk.has(l.i)}"><div><b>${refChk.has(l.i)?'\u2611':'\u2610'} ${l.n}</b><small>${l.q} \u00d7 ${peso(l.p)}</small></div><b>${peso(l.q*l.p)}</b></button>`).join(''):`<p style="margin:6px 0">This cancels all of ${o.no} and returns ${peso(oTot(o))}.</p>`}
+   <h3 style="margin-top:16px">3. Reason and approval</h3>
+   <div class="row"><select class="field" id="rfr" aria-label="Reason">${['Wrong order','Customer changed mind','Quality issue','Cashier error','Long wait'].map(r=>`<option ${r===refReason?'selected':''}>${r}</option>`).join('')}</select><input class="field" id="rfpin" type="password" inputmode="numeric" maxlength="6" placeholder="Manager PIN" aria-label="Manager PIN" style="width:150px"></div>
+   <p style="color:var(--muted);font-size:12px;margin:6px 0 12px">Demo manager PIN: <span class="mono">${MGR_PIN}</span>. Every refund is saved in the audit log with the reason.</p>
+   <button class="btn pri" data-rfgo style="width:100%;padding:12px">${refMode==='Void'?'Void order '+o.no:'Refund '+peso(amt)}</button>`:`<p style="color:var(--muted);margin:0">Pick an order on the left to start.</p>`;
+  return head('Refund Order','Refund items or void a whole order. A manager PIN is required.','')+
+  `<div class="clock"><div class="card"><h3>1. Find the order</h3><input class="field" id="rfq" placeholder="Search order number" value="${refQ}" aria-label="Search order" style="width:100%;margin-bottom:8px">${cand.map(c=>`<button class="line" style="width:100%;border:0;border-bottom:1px dashed var(--line);text-align:left;color:inherit;${c.no===refSel?'background:var(--sea-soft)':'background:none'}" data-rs="${c.no}"><div><b class="mono">${c.no}</b><small>${c.t} \u00b7 ${c.type} \u00b7 ${c.items.length} line(s)</small></div><b>${peso(oTot(c)-(c.ref||0))}</b></button>`).join('')||'<p style="color:var(--muted)">No refundable orders match.</p>'}</div>
+  <div class="card">${right}${mm}</div></div>`;
+}
+
+const pages={'b-ord':pOrd,'b-ref':pRef,'a-br':pBr,'a-mem':pMem,'a-prod':pProd,'b-prod':pProd,'a-dash':pDashA,'a-po':pPO,'a-att':pAttA,'a-emp':pEmp,'b-dash':pDashB,'b-pos':pPOS,'b-clock':pClock,'b-att':pAttB,'b-emp':pEmp,'b-po':pPOB};
+function render(){$('#content').innerHTML=(pages[page]||pSoon)();tick()}
+
+/* ---------- Events (delegated) ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-t],[data-go],[data-ap],[data-cat],[data-add],[data-q],[data-ot],[data-clear],[data-charge],[data-k],[data-tg],[data-vo],[data-vx],[data-rf],[data-rs],[data-rl],[data-rm],[data-rfgo],[data-of],[data-cam]');
+  if(!t)return;
+  const d=t.dataset;
+  if(d.cam){
+    if(d.cam==='cancel'){pending=null;msg={t:'Enter your 6-digit PIN',k:'mute'};render()}
+    else if(d.cam==='skip'){finishPunch(false)}
+    else{const v=document.querySelector('.viewf');if(v)v.classList.add('flash');setTimeout(()=>finishPunch(true),450)}
+    return}
+  if(d.vo){selOrd=d.vo;render();return}
+  if('vx' in d){selOrd=null;render();return}
+  if(d.of){ordF=d.of;render();return}
+  if(d.rf){refSel=d.rf;refChk=new Set();refMode='Refund';refMsg=null;go('b-ref');return}
+  if(d.rs){refSel=d.rs;refChk=new Set();refMode='Refund';refMsg=null;render();return}
+  if(d.rl!==undefined){const i=+d.rl;refChk.has(i)?refChk.delete(i):refChk.add(i);render();return}
+  if(d.rm){refMode=d.rm;refChk=new Set();refMsg=null;render();return}
+  if('rfgo' in d){
+    const o=orders.find(x=>x.no===refSel);const pin=($('#rfpin')||{}).value;
+    if(pin!==MGR_PIN){refMsg={k:'bad',t:'Manager PIN is missing or wrong.'};render();return}
+    if(refMode==='Void'){o.st='Voided';o.reason=refReason;refMsg={k:'good',t:o.no+' voided. Reason saved: '+refReason+'.'}}
+    else{
+      if(!refChk.size){refMsg={k:'bad',t:'Pick at least one item to refund.'};render();return}
+      const amt=o.items.reduce((a,l,i)=>refChk.has(i)?a+l.q*l.p:a,0);
+      o.rl=[...(o.rl||[]),...refChk];o.ref=(o.ref||0)+amt;o.reason=refReason;
+      o.st=o.rl.length===o.items.length?'Refunded':'Part refunded';
+      refMsg={k:'good',t:peso(amt)+' refunded on '+o.no+'. Reason saved: '+refReason+'.'};
+    }
+    toast(o.no+(refMode==='Void'?' voided':' refunded'));refSel=null;refChk=new Set();render();return
+  }
+  if(t.dataset.tg){const p=prods.find(x=>x.id==t.dataset.tg);p.on=!p.on;toast(p.n+(p.on?' is active':' is hidden from the POS'));render();return}
+  if(t.dataset.t){toast(t.dataset.t);return}
+  if(t.dataset.go){e.preventDefault();go(t.dataset.go);return}
+  if(t.dataset.ap){const p=POs.find(x=>x.no===t.dataset.ap);p.st='Pending';toast(p.no+' approved');render();return}
+  if(t.dataset.cat){cat=t.dataset.cat;render();return}
+  if(t.dataset.ot){orderType=t.dataset.ot;render();return}
+  if(t.dataset.add){const p=prods.find(x=>x.id==t.dataset.add);const l=cart.find(x=>x.id===p.id);l?l.q++:cart.push({id:p.id,n:p.n,p:p.p,q:1});render();return}
+  if(t.dataset.q){const [id,d]=t.dataset.q.split(':');const l=cart.find(x=>x.id==id);l.q+=+d;cart=cart.filter(x=>x.q>0);render();return}
+  if('clear' in t.dataset){cart=[];render();return}
+  if('charge' in t.dataset){const n=cart.reduce((a,l)=>a+l.q,0),s=cart.reduce((a,l)=>a+l.p*l.q,0);const no='ORD-'+(1059+orders.length-8);orders.unshift({no,t:fmt(new Date()),type:orderType,pay:'Cash',cashier:'Maria Santos',st:'Paid',items:cart.map(l=>({n:l.n,q:l.q,p:l.p}))});cart=[];render();toast(no+' paid · '+n+' items · '+peso(s));return}
+  if(t.dataset.k!==undefined){key(t.dataset.k)}
+});
+document.addEventListener('input',e=>{if(e.target.id==='ordq'||e.target.id==='rfq'){const id=e.target.id;if(id==='ordq')ordQ=e.target.value;else refQ=e.target.value;const pos=e.target.selectionStart;render();const i=document.getElementById(id);i.focus();i.setSelectionRange(pos,pos);return}if(e.target.id==='emq'||e.target.id==='brq'){const f=e.target.id==='emq';if(f)empQ=e.target.value;else brQ=e.target.value;const pos=e.target.selectionStart,id=e.target.id;render();const i=document.getElementById(id);i.focus();i.setSelectionRange(pos,pos);return}if(e.target.id==='prq'){prodQ=e.target.value;const pos=e.target.selectionStart;render();const i=$('#prq');i.focus();i.setSelectionRange(pos,pos);return}if(e.target.id==='poq'){poQ=e.target.value;const pos=e.target.selectionStart;render();const i=$('#poq');i.focus();i.setSelectionRange(pos,pos)}});
+document.addEventListener('change',e=>{if(e.target.id==='prc'){prodCat=e.target.value;render()}if(e.target.id==='rfr'){refReason=e.target.value}if(e.target.id==='emr'){empRole=e.target.value;render()}if(e.target.id==='emb'){empBr=e.target.value;render()}if(e.target.id==='pof'){poFilter=e.target.value;render()}if(e.target.id==='attb'){attBr=e.target.value;render()}});
+
+function key(k){
+  if(k==='C'){pinBuf=''}
+  else if(k==='⌫'){pinBuf=pinBuf.slice(0,-1)}
+  else if(pinBuf.length<6){pinBuf+=k}
+  if(pinBuf.length===6){
+    const emp=emps.find(x=>x.pin===pinBuf&&x.br==='Cainta, Sto. Niño');
+    pinBuf='';
+    if(!emp){msg={t:'PIN not recognised. Try again.',k:'bad'}}
+    else{pending=emp;msg={t:'Enter your 6-digit PIN',k:'mute'};render();return}
+  }
+  render();
+}
+
+/* ---------- Login (prototype only: any password works) ---------- */
+function signIn(email){
+  const e=email.toLowerCase();
+  role=e.startsWith('admin')?'admin':e.startsWith('cashier')?'cashier':e.startsWith('employee')?'employee':'manager';
+  $('#login').hidden=true;
+  $('#surfSeg').hidden=role!=='admin'; /* only HQ can switch; branch accounts never see the Admin menu */
+  if(role==='admin'||role==='manager')setSurface(role==='admin'?'admin':'branch');
+  else{surface='branch';go(role==='cashier'?'b-pos':'b-clock')}
+  toast('Signed in as '+{admin:'HQ admin',manager:'Cainta manager',cashier:'cashier',employee:'employee'}[role]);
+}
+$('#loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const em=$('#lEmail').value.trim(),pw=$('#lPass').value;
+  if(!em||!/^\S+@\S+\.\S+$/.test(em)){$('#lErr').textContent='Enter your email address.';$('#lEmail').focus();return}
+  if(!pw){$('#lErr').textContent='Enter your password.';$('#lPass').focus();return}
+  if(!/^(admin|cainta|cashier|employee)/i.test(em)){$('#lErr').textContent='We could not find that account. Try a demo account below.';return}
+  $('#lErr').textContent='';signIn(em);
+});
+document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>signIn(b.dataset.demo));
+$('#lForgot').onclick=e=>{e.preventDefault();toast('Reset link would be emailed')};
+$('#signOut').onclick=()=>{$('#lPass').value='';$('#lEmail').value='';$('#login').hidden=false;$('#lEmail').focus()};
+
+renderNav();render();
+</script>
+
+</body>
+</html>
