@@ -132,7 +132,7 @@ td.num,th.num{text-align:right}
 .viewf .rec{position:absolute;left:10px;top:8px;color:#ff6b6b;font-size:11px;font-weight:700;letter-spacing:.08em}
 .viewf.flash::after{content:"";position:absolute;inset:0;background:#fff;animation:fl .45s ease-out forwards}
 @keyframes fl{from{opacity:.95}to{opacity:0}}
-.thumb{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sea-soft);color:var(--sea);font-size:10px;font-weight:700;margin-right:4px;border:2px solid var(--sea)}
+.thumb{display:inline-grid;place-items:center;width:34px;height:34px;object-fit:cover;vertical-align:middle;border-radius:50%;background:var(--sea-soft);color:var(--sea);font-size:10px;font-weight:700;margin-right:4px;border:2px solid var(--sea)}
 .thumb.off{background:none;border:2px dashed var(--line);color:var(--muted)}
 /* Login */
 .login{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--bg)}
@@ -373,14 +373,14 @@ function pPO(){
 }
 
 let attBr='All';
-function th(on,w,e){const ini=e.n.split(' ').map(x=>x[0]).join('');return on?`<span class="thumb" title="Photo at time ${w} (sample)">${ini}</span>`:`<span class="thumb off" title="No photo at time ${w}">\u2013</span>`}
+function th(on,w,e){const ini=e.n.split(' ').map(x=>x[0]).join('');return on?(typeof on==='string'?`<img class="thumb" src="${on}" alt="Photo at time ${w}" title="Photo at time ${w}">`:`<span class="thumb" title="Photo at time ${w} (sample)">${ini}</span>`):`<span class="thumb off" title="No photo at time ${w}">\u2013</span>`}
 function attTable(list,showBr){
   const rows=punches.filter(p=>list.includes(p.e)).sort((a,b)=>(b.date.localeCompare(a.date))||(b.in-a.in));
   const hrs=p=>p.out?((p.out-p.in)/36e5).toFixed(1)+' h':'<span style="color:var(--muted)">—</span>';
   return `<div class="tw"><table><thead><tr><th>Employee</th>${showBr?'<th>Branch</th>':''}<th>Date</th><th>Time in</th><th>Time out</th><th>Photo</th><th class="num">Hours</th><th>Status</th></tr></thead><tbody>
   ${rows.map(p=>{const e=emps.find(x=>x.id===p.e);const open=!p.out&&p.date==='Nov 19';
    const chip=p.flag==='Missing time out'?'<span class="chip c-bad">Missing time out</span>':p.flag==='Late'?'<span class="chip c-warn">Late</span>':p.flag==='No photo'?'<span class="chip c-warn">No photo</span>':p.flag?`<span class="chip c-info">${p.flag}</span>`:open?'<span class="chip c-good">On shift</span>':'<span class="chip c-mute">Complete</span>';
-   return `<tr><td><b>${e.n}</b><br><small style="color:var(--muted)">${e.role}</small></td>${showBr?`<td>${e.br}</td>`:''}<td>${p.date}</td><td class="mono">${fmt(p.in)}</td><td class="mono">${p.out?fmt(p.out):'—'}</td><td>${th(p.phIn!==false,'in',e)}${p.out?th(p.phOut!==false,'out',e):''}</td><td class="num">${hrs(p)}</td><td>${chip}</td></tr>`}).join('')}
+   return `<tr><td><b>${e.n}</b><br><small style="color:var(--muted)">${e.role}</small></td>${showBr?`<td>${e.br}</td>`:''}<td>${p.date}</td><td class="mono">${fmt(p.in)}</td><td class="mono">${p.out?fmt(p.out):'—'}</td><td>${th(p.phIn===undefined?true:p.phIn,'in',e)}${p.out?th(p.phOut===undefined?true:p.phOut,'out',e):''}</td><td class="num">${hrs(p)}</td><td>${chip}</td></tr>`}).join('')}
   </tbody></table></div>`;
 }
 function pAttA(){
@@ -472,17 +472,47 @@ function pPOS(){
 }
 
 let msg={t:'Enter your 6-digit PIN',k:'mute'}, pinBuf='', pending=null;
+/* ---------- Real camera (falls back to a placeholder where the browser blocks it) ---------- */
+let camStream=null,camState='idle'; // idle | asking | live | fail
+function showLive(on){
+  const v=document.getElementById('camv'),sv=document.getElementById('camsvg'),rc=document.getElementById('camrec'),nt=document.getElementById('camNote');
+  if(v)v.hidden=!on; if(sv)sv.style.display=on?'none':''; if(rc)rc.hidden=!on;
+  if(nt)nt.textContent=on?'Live camera. The photo stays in this browser tab and is not uploaded.':(camState==='asking'?'Asking for camera permission\u2026':'No camera access here, so a placeholder photo is used. Open the demo in its own browser tab and allow the camera for a real photo.');
+}
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}if(camState!=='fail')camState='idle'}
+async function attachCam(){
+  const v=document.getElementById('camv'); if(!v)return;
+  if(camStream){if(v.srcObject!==camStream){v.srcObject=camStream;v.play().catch(()=>{})}showLive(true);return}
+  if(camState==='fail'){showLive(false);return}
+  if(camState==='asking'){showLive(false);return}
+  camState='asking';showLive(false);
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('unsupported');
+    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+    if(!pending){st.getTracks().forEach(t=>t.stop());camState='idle';return}
+    camStream=st;camState='live';attachCam();
+  }catch(err){camState='fail';if(pending)showLive(false)}
+}
+function shot(){
+  const v=document.getElementById('camv');
+  if(!camStream||!v||!v.videoWidth)return true; // placeholder photo
+  const c=document.createElement('canvas');c.width=160;c.height=120;
+  const w=v.videoWidth,h=v.videoHeight,cw=Math.min(w,h*4/3),ch=cw*3/4;
+  const x=c.getContext('2d');x.translate(160,0);x.scale(-1,1);
+  x.drawImage(v,(w-cw)/2,(h-ch)/2,cw,ch,0,0,160,120);
+  return c.toDataURL('image/jpeg',0.7);
+}
 function camCard(){
   const open=punches.find(x=>x.e===pending.id&&x.date==='Nov 19'&&!x.out);
   const act=open?'time out':'time in';
   return `<div class="card pin"><small style="color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700">${open?'Time out':'Time in'} \u00b7 photo check</small>
   <h3 style="margin:6px 0 12px;font-size:18px">Look at the camera, ${pending.n.split(' ')[0]}</h3>
-  <div class="viewf" role="img" aria-label="Simulated camera preview"><svg viewBox="0 0 200 150" aria-hidden="true"><circle cx="100" cy="62" r="26" fill="rgba(255,255,255,.28)"/><path d="M48 150c4-34 28-46 52-46s48 12 52 46z" fill="rgba(255,255,255,.2)"/><path d="M14 30V14h16M170 14h16v16M186 120v16h-16M30 136H14v-16" stroke="#ffdf00" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span class="rec">\u25cf LIVE</span></div>
+  <div class="viewf" role="img" aria-label="Camera preview"><video id="camv" autoplay playsinline muted hidden style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video><svg id="camsvg" viewBox="0 0 200 150" aria-hidden="true"><circle cx="100" cy="62" r="26" fill="rgba(255,255,255,.28)"/><path d="M48 150c4-34 28-46 52-46s48 12 52 46z" fill="rgba(255,255,255,.2)"/><path d="M14 30V14h16M170 14h16v16M186 120v16h-16M30 136H14v-16" stroke="#ffdf00" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span class="rec" id="camrec" hidden>\u25cf LIVE</span></div>
   <button class="btn pri" data-cam="snap" style="width:100%;padding:12px;margin-top:12px">Take photo and ${act}</button>
   <button class="btn" data-cam="cancel" style="width:100%;margin-top:8px">Cancel</button>
   <p style="color:var(--muted);font-size:12px;margin:12px 0 6px">Camera not working?</p>
   <button class="btn sm" data-cam="skip">Continue without photo</button><p style="color:var(--muted);font-size:12px;margin:6px 0 0">The punch is flagged "No photo" for the manager.</p>
-  <p style="color:var(--muted);font-size:11.5px;margin:12px 0 0">Demo only: the camera is simulated. The real app uses the tablet camera.</p></div>`;
+  <p id="camNote" style="color:var(--muted);font-size:11.5px;margin:12px 0 0">Asking for camera permission…</p></div>`;
 }
 function finishPunch(photo){
   const emp=pending;pending=null;
@@ -633,7 +663,7 @@ function pRef(){
 }
 
 const pages={'b-ord':pOrd,'b-ref':pRef,'a-br':pBr,'a-mem':pMem,'a-prod':pProd,'b-prod':pProd,'a-dash':pDashA,'a-po':pPO,'a-att':pAttA,'a-emp':pEmp,'b-dash':pDashB,'b-pos':pPOS,'b-clock':pClock,'b-att':pAttB,'b-emp':pEmp,'b-po':pPOB};
-function render(){$('#content').innerHTML=(pages[page]||pSoon)();tick()}
+function render(){$('#content').innerHTML=(pages[page]||pSoon)();tick();if(pending&&page==='b-clock')attachCam();else stopCam()}
 
 /* ---------- Events (delegated) ---------- */
 document.addEventListener('click',e=>{
@@ -652,7 +682,7 @@ document.addEventListener('click',e=>{
   if(d.cam){
     if(d.cam==='cancel'){pending=null;msg={t:'Enter your 6-digit PIN',k:'mute'};render()}
     else if(d.cam==='skip'){finishPunch(false)}
-    else{const v=document.querySelector('.viewf');if(v)v.classList.add('flash');setTimeout(()=>finishPunch(true),450)}
+    else{const v=document.querySelector('.viewf');if(v)v.classList.add('flash');const photo=shot();setTimeout(()=>finishPunch(photo),450)}
     return}
   if(d.vo){selOrd=d.vo;render();return}
   if('vx' in d){selOrd=null;render();return}
