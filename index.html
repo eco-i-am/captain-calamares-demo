@@ -368,7 +368,7 @@ function pPO(){
   return head('Branch PO','Branches order stock from HQ. Approve, track and print.','<button class="btn" data-t="Exported to Excel">Export Excel</button><button class="btn pri" data-t="New PO form would open">+ New PO</button>')+
   `<div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="poq" placeholder="Search PO number or branch" value="${poQ}" aria-label="Search" style="flex:1;min-width:200px"><select class="field" id="pof" aria-label="Status">${['All',...poStatuses].map(s=>`<option ${s===poFilter?'selected':''}>${s}</option>`).join('')}</select></div>
   <div class="tw"><table><thead><tr><th>PO number</th><th>Branch</th><th>Date</th><th class="num">Items</th><th class="num">Total</th><th>Status</th><th></th></tr></thead><tbody>
-  ${rows.map(p=>`<tr><td class="mono">${p.no}</td><td>${p.br}</td><td>${p.d}</td><td class="num">${p.items}</td><td class="num">${peso(p.amt)}</td><td><span class="chip ${stChip[p.st]}">${p.st}</span></td><td>${p.st==='Requested'?`<button class="btn sm sea" data-ap="${p.no}">Approve</button> <button class="btn sm" data-t="PO rejected">Reject</button>`:`<button class="btn sm" data-t="Print preview opens">Print</button>`}</td></tr>`).join('')||'<tr><td colspan="7" style="color:var(--muted)">No purchase orders match.</td></tr>'}
+  ${rows.map(p=>`<tr><td class="mono">${p.no}</td><td>${p.br}</td><td>${p.d}</td><td class="num">${p.items}</td><td class="num">${p.amt==null?'To be priced':peso(p.amt)}</td><td><span class="chip ${stChip[p.st]}">${p.st}</span></td><td>${p.st==='Requested'?`<button class="btn sm sea" data-ap="${p.no}">Approve</button> <button class="btn sm" data-t="PO rejected">Reject</button>`:`<button class="btn sm" data-t="Print preview opens">Print</button>`}</td></tr>`).join('')||'<tr><td colspan="7" style="color:var(--muted)">No purchase orders match.</td></tr>'}
   </tbody></table></div></div>`;
 }
 
@@ -507,11 +507,56 @@ function pAttB(){
   return head('Employee’s Report','Attendance for Cainta, Sto. Niño','<button class="btn" data-t="Exported to Excel">Export Excel</button>')+
   `<div class="card">${attTable(ids,false)}<p style="color:var(--muted);font-size:12.5px;margin:12px 0 0">Corrections need a manager PIN and a reason. The original punch stays in the log.</p></div>`;
 }
+
+/* ---------- Real branch order items (from the client's order form) ---------- */
+const rg=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
+let npOpen=false;
+const minDate=()=>{const d=new Date();d.setDate(d.getDate()+2);return d.toISOString().slice(0,10)};
+const poCatalog=[
+ ['Food ingredients',[
+  {n:'Marinated Squid',u:'bags',ph:'Bags'},{n:'Pre Mixed Flour',u:'kilograms',ph:'Kg'},
+  {n:'Regular Vinegar',u:'liters',o:[7,8,10,14,20,50,80,100,150,180,200].map(x=>x+' L')},
+  {n:'Spicy Vinegar',u:'liters',o:[7,8,10,14,20,50,80,100,150,180,200].map(x=>x+' L')},
+  {n:'Bottled Vinegar',u:'bottles',o:[1,3,5,10,15,20,25,30,35,40,45,50,80,100,150,180,200]},
+  {n:'Java Mix',u:'quantity',o:[10,20,30,40,50,60,70,80,90,100,120,150,180,200]},
+  {n:'Garlic Parmesan Powder',u:'kilos',o:[...rg(1,10),20,50,100,150,180,200]},
+  {n:'Salted Egg Powder',u:'kilos',o:[...rg(1,10),20,50,80,100,150,180,200]},
+  {n:'Honey Sriracha Powder',u:'kilos',o:[...rg(1,10),20,50,80,100,150,180,200]},
+  {n:'Spicy Powder',u:'kilos',o:[...rg(1,10),20,50,80,100,150,180,200]},
+  {n:'Palm Oil',u:'gallons',o:[...rg(1,10),20,50,80,100,150,180,200]},
+  {n:'Margarine',u:'kilos',o:[...rg(1,10),20,50,80,100,150,180,200]},
+  {n:'Garlic Bits',u:'kilos',o:[...rg(1,10),20,50,100,150,180,200]}]],
+ ['Packaging and disposables',[
+  {n:'Regular Bowls',u:'50 pcs per pack',o:[...rg(1,16),20,50]},{n:'Mammoth Bowls',u:'50 pcs per pack',o:[...rg(1,20),50]},
+  {n:'Kraken Bowls',u:'50 pcs per pack',o:[...rg(1,20),50]},{n:'JRC Bowls',u:'50 pcs per pack',o:[...rg(1,20),50]},
+  {n:'Brown Bag #6',u:'100 per pack',o:[...rg(1,10),20,50]},{n:'Brown Bag #10',u:'100 per pack',o:[...rg(1,10),20,50]},
+  {n:'Sauce Cups',u:'50 per pack',o:[...rg(1,20),25,30,35,40,45,50]},{n:'1x10 Plastic',u:'quantity',o:[...rg(1,10),20,50,100,200]},
+  {n:'Bowl Lid',u:'50 pcs per pack',o:[...rg(1,10),50,80,100,200]},{n:'Rice Wrapper',u:'1,000 pcs each',o:rg(1,10)},
+  {n:'Sando Bag',u:'quantity',o:[...rg(1,10),20,50,100,200]},{n:'Bamboo Fork',u:'packs',o:[5,10,15,20,25,30,50,100,200]},
+  {n:'Plastic Spoon',u:'kilos',o:[...rg(1,10),20,50,100,200]},{n:'Pre-Cut Tissue',u:'bundles of 5 packs',o:[1,2,3,4,5,10,50]},
+  {n:'Gloves',u:'packs',o:[...rg(1,10),20,50,100,200]}]],
+ ['Drinks and cleaning',[
+  {n:'Coca Cola',u:'cases',o:[...rg(1,8),10]},{n:'Sprite',u:'cases',o:rg(1,10)},
+  {n:'Dishwashing Liquid',u:'gallons',o:[...rg(1,10),20,50,100,200]},{n:'Trash Bag',u:'packs',o:rg(1,10)}]],
+ ['Uniform',[
+  {n:'Polo Shirt',u:'size and quantity',ph:'M x 3'},{n:'Hairnet',u:'quantity',ph:'Qty'},{n:'Apron',u:'quantity',ph:'Qty'}]],
+];
+let poSeq=0;
 function pPOB(){
-  return head('Purchase Order','Order stock from HQ','<button class="btn pri" data-t="New PO form would open">+ New PO</button>')+
-  `<div class="card"><h3>PO-2611-0042 · ${peso(38450)}</h3><div class="stepper">${poStatuses.map((s,i)=>`<span class="${i<1?'done':i===1?'on':''}">${s}</span>`).join('')}</div><p style="color:var(--muted);margin:0">Waiting for HQ approval. You can edit or cancel until it is approved.</p></div>
-  <div class="card tw" style="margin-top:14px"><table><thead><tr><th>Item</th><th class="num">Qty</th><th>Unit</th><th class="num">Cost</th></tr></thead><tbody>
-  <tr><td>Squid rings, frozen</td><td class="num">20</td><td>kg</td><td class="num">${peso(9600)}</td></tr><tr><td>Breading mix</td><td class="num">12</td><td>kg</td><td class="num">${peso(3840)}</td></tr><tr><td>Cooking oil</td><td class="num">6</td><td>can</td><td class="num">${peso(7200)}</td></tr><tr><td>Garlic mayo dip, 1 L</td><td class="num">10</td><td>pc</td><td class="num">${peso(2900)}</td></tr><tr><td>Takeout boxes</td><td class="num">400</td><td>pc</td><td class="num">${peso(4800)}</td></tr></tbody></table></div>`;
+  const mine=POs.filter(x=>x.br==='Cainta, Sto. Ni\u00f1o');
+  const cur=mine[0];
+  const form=npOpen?`<div class="card" style="margin-bottom:14px;border-color:var(--sea)"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">New order to HQ</h3><button class="btn sm" data-np>Close</button></div>
+   <p style="color:var(--muted);margin:0 0 12px">Same items as the current order form. Leave an item blank to skip it. Prices appear on the invoice.</p>
+   <div class="grid g2" style="margin-bottom:12px"><label style="display:grid;gap:6px;font-weight:600">Branch<input class="field" value="Cainta, Sto. Ni\u00f1o" disabled></label>
+   <label style="display:grid;gap:6px;font-weight:600" for="npDate">Date of delivery (at least 48 hours ahead)<input class="field" id="npDate" type="date" min="${minDate()}"></label></div>
+   ${poCatalog.map(([cat,items])=>`<h3 style="margin:14px 0 8px">${cat}</h3><div class="grid g2" style="gap:8px 14px">${items.map(it=>`<label style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px dashed var(--line);padding:4px 0"><span>${it.n}<small style="color:var(--muted);display:block">${it.u}</small></span>${it.o?`<select class="field" data-it="${it.n}" aria-label="${it.n}" style="width:120px"><option value="">\u2014</option>${it.o.map(o=>`<option>${o}</option>`).join('')}</select>`:`<input class="field" data-it="${it.n}" aria-label="${it.n}" placeholder="${it.ph||'Qty'}" style="width:120px">`}</label>`).join('')}</div>`).join('')}
+   <div class="grid g2" style="margin-top:16px"><label style="display:grid;gap:6px;font-weight:600" for="npPay">Payment method<select class="field" id="npPay"><option>BPI</option><option>BDO</option><option>GCash</option></select></label>
+   <label style="display:grid;gap:6px;font-weight:600" for="npMode">Mode of delivery<select class="field" id="npMode"><option>Pick Up</option><option>Delivery (by schedule)</option><option>Lalamove/Grab</option></select></label></div>
+   <p class="lerr" id="npErr" role="alert" style="margin:10px 0 0"></p>
+   <button class="btn pri" data-npgo style="width:100%;padding:12px;margin-top:6px">Send order to HQ</button></div>`:'';
+  return head('Purchase Order','Order stock from HQ','<button class="btn pri" data-np>+ New order</button>')+form+
+  (cur?`<div class="card"><h3>${cur.no} \u00b7 ${cur.amt==null?'To be priced':peso(cur.amt)}</h3><div class="stepper">${poStatuses.map((x,i)=>`<span class="${i<poStatuses.indexOf(cur.st)?'done':i===poStatuses.indexOf(cur.st)?'on':''}">${x}</span>`).join('')}</div><p style="color:var(--muted);margin:0">${cur.st==='Requested'?'Waiting for HQ approval. You can edit or cancel until it is approved.':'Latest order status.'}</p></div>`:'')+
+  `<div class="card tw" style="margin-top:14px"><h3>My orders</h3><table><thead><tr><th>PO number</th><th>Date</th><th class="num">Items</th><th class="num">Total</th><th>Status</th></tr></thead><tbody>${mine.map(x=>`<tr><td class="mono">${x.no}</td><td>${x.d}</td><td class="num">${x.items}</td><td class="num">${x.amt==null?'To be priced':peso(x.amt)}</td><td><span class="chip ${stChip[x.st]}">${x.st}</span></td></tr>`).join('')}</tbody></table></div>`;
 }
 function pSoon(){
   const all=[...adminNav,...branchNav].flatMap(x=>x[1]);const l=(all.find(x=>x[0]===page)||[0,'This screen'])[1];
@@ -589,9 +634,18 @@ function render(){$('#content').innerHTML=(pages[page]||pSoon)();tick()}
 
 /* ---------- Events (delegated) ---------- */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-t],[data-go],[data-ap],[data-cat],[data-add],[data-q],[data-ot],[data-clear],[data-charge],[data-k],[data-tg],[data-vo],[data-vx],[data-rf],[data-rs],[data-rl],[data-rm],[data-rfgo],[data-of],[data-cam]');
+  const t=e.target.closest('[data-t],[data-go],[data-ap],[data-cat],[data-add],[data-q],[data-ot],[data-clear],[data-charge],[data-k],[data-tg],[data-vo],[data-vx],[data-rf],[data-rs],[data-rl],[data-rm],[data-rfgo],[data-of],[data-cam],[data-np],[data-npgo]');
   if(!t)return;
   const d=t.dataset;
+  if('np' in d){npOpen=!npOpen;render();return}
+  if('npgo' in d){
+    const err=$('#npErr'),date=$('#npDate').value;
+    const picked=[...document.querySelectorAll('[data-it]')].filter(x=>x.value.trim());
+    if(!date||date<minDate()){err.textContent='Pick a delivery date at least 48 hours from now.';return}
+    if(!picked.length){err.textContent='Choose at least one item.';return}
+    poSeq++;const no='PO-2611-'+String(42+poSeq).padStart(4,'0');
+    POs.unshift({no,br:'Cainta, Sto. Ni\u00f1o',d:'Nov 19',items:picked.length,amt:null,st:'Requested'});
+    npOpen=false;render();toast(no+' sent to HQ for approval \u00b7 '+picked.length+' items');return}
   if(d.cam){
     if(d.cam==='cancel'){pending=null;msg={t:'Enter your 6-digit PIN',k:'mute'};render()}
     else if(d.cam==='skip'){finishPunch(false)}
