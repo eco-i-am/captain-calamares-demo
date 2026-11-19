@@ -225,36 +225,36 @@ const fmt = d => { let h=d.getHours(), m=d.getMinutes(); return (h%12||12)+':'+p
 /* ---------- Sample data (examples for the demo) ---------- */
 const branches = [
   {n:'Cainta, Sto. Niño', sales:184200, po:12, st:'Open'},
-  {n:'Marikina Riverbanks', sales:152750, po:9, st:'Open'},
-  {n:'Antipolo Hinulugang', sales:121400, po:7, st:'Open'},
-  {n:'Taytay Greenland', sales:96300, po:5, st:'Open'},
-  {n:'Pasig Kapitolyo', sales:64800, po:3, st:'Opening soon'},
+  {n:'13 RIVERBANKS', sales:152750, po:9, st:'Open'},
+  {n:'16 ANTIPOLO', sales:121400, po:7, st:'Open'},
+  {n:'20 WALTERMART TAYTAY', sales:96300, po:5, st:'Open'},
+  {n:'45 PRIMARK KASIGLAHAN', sales:64800, po:3, st:'Opening soon'},
 ];
 const poStatuses = ['Requested','Pending','To pay','Processing','For pick-up','In-transit','Picked-up','Delivered','Completed'];
 const stChip = {Requested:'c-mute',Pending:'c-warn','To pay':'c-bad',Processing:'c-info','For pick-up':'c-info','In-transit':'c-sea','Picked-up':'c-sea',Delivered:'c-good',Completed:'c-good'};
 let POs = [
   {no:'PO-2611-0042',br:'Cainta, Sto. Niño',d:'Nov 19',items:14,amt:38450,st:'Requested'},
-  {no:'PO-2611-0041',br:'Marikina Riverbanks',d:'Nov 19',items:9,amt:24180,st:'Pending'},
-  {no:'PO-2611-0039',br:'Antipolo Hinulugang',d:'Nov 18',items:11,amt:29900,st:'To pay'},
-  {no:'PO-2611-0037',br:'Taytay Greenland',d:'Nov 17',items:6,amt:15720,st:'Processing'},
+  {no:'PO-2611-0041',br:'13 RIVERBANKS',d:'Nov 19',items:9,amt:24180,st:'Pending'},
+  {no:'PO-2611-0039',br:'16 ANTIPOLO',d:'Nov 18',items:11,amt:29900,st:'To pay'},
+  {no:'PO-2611-0037',br:'20 WALTERMART TAYTAY',d:'Nov 17',items:6,amt:15720,st:'Processing'},
   {no:'PO-2611-0034',br:'Cainta, Sto. Niño',d:'Nov 16',items:12,amt:33600,st:'In-transit'},
-  {no:'PO-2611-0031',br:'Pasig Kapitolyo',d:'Nov 15',items:20,amt:61250,st:'Delivered'},
-  {no:'PO-2611-0027',br:'Marikina Riverbanks',d:'Nov 13',items:8,amt:20400,st:'Completed'},
+  {no:'PO-2611-0031',br:'45 PRIMARK KASIGLAHAN',d:'Nov 15',items:20,amt:61250,st:'Delivered'},
+  {no:'PO-2611-0027',br:'13 RIVERBANKS',d:'Nov 13',items:8,amt:20400,st:'Completed'},
 ];
 const emps = [
   {id:1,n:'Maria Santos',role:'Cashier',br:'Cainta, Sto. Niño',pin:'482910'},
   {id:2,n:'Jose Reyes',role:'Kitchen',br:'Cainta, Sto. Niño',pin:'173025'},
   {id:3,n:'Ana Cruz',role:'Crew',br:'Cainta, Sto. Niño',pin:'906431'},
   {id:4,n:'Paolo Mendoza',role:'Manager',br:'Cainta, Sto. Niño',pin:'251867'},
-  {id:5,n:'Liza Ramos',role:'Cashier',br:'Marikina Riverbanks',pin:'640192'},
-  {id:6,n:'Ben Aquino',role:'Crew',br:'Marikina Riverbanks',pin:'318476'},
-  {id:7,n:'Carla Dizon',role:'Crew',br:'Antipolo Hinulugang',pin:'759204'},
+  {id:5,n:'Liza Ramos',role:'Cashier',br:'13 RIVERBANKS',pin:'640192'},
+  {id:6,n:'Ben Aquino',role:'Crew',br:'13 RIVERBANKS',pin:'318476'},
+  {id:7,n:'Carla Dizon',role:'Crew',br:'16 ANTIPOLO',pin:'759204'},
   {id:8,n:'Rico Bautista',role:'Crew',br:'Cainta, Sto. Niño',pin:'384512'},
   {id:9,n:'Joy Villanueva',role:'Cashier',br:'Cainta, Sto. Niño',pin:'527390'},
-  {id:10,n:'Gina Torres',role:'Manager',br:'Marikina Riverbanks',pin:'861043'},
-  {id:11,n:'Noel Garcia',role:'Manager',br:'Taytay Greenland',pin:'492718'},
-  {id:12,n:'Tessa Navarro',role:'Manager',br:'Antipolo Hinulugang',pin:'735826'},
-  {id:13,n:'Ramon Flores',role:'Manager',br:'Pasig Kapitolyo',pin:'218659'},
+  {id:10,n:'Gina Torres',role:'Manager',br:'13 RIVERBANKS',pin:'861043'},
+  {id:11,n:'Noel Garcia',role:'Manager',br:'20 WALTERMART TAYTAY',pin:'492718'},
+  {id:12,n:'Tessa Navarro',role:'Manager',br:'16 ANTIPOLO',pin:'735826'},
+  {id:13,n:'Ramon Flores',role:'Manager',br:'45 PRIMARK KASIGLAHAN',pin:'218659'},
   {id:14,n:'Isabel Chua',role:'Operations',br:'HQ',pin:'604375'},
   {id:15,n:'Dennis Uy',role:'Accountant',br:'HQ',pin:'913284'},
   {id:16,n:'Karen Lim',role:'Purchasing',br:'HQ',pin:'457102'},
@@ -353,12 +353,12 @@ function pDashA(){
   return head('Dashboard','HQ overview · all branches · today is Nov 19, 2026','<button class="btn">This week ▾</button><button class="btn pri" data-t="Report exported">Export</button>')+
   `<div class="grid g4">${kpi('Total sales (week)',peso(total),'<span class="up">▲ 8.4%</span> vs last week')}${kpi('Overdue invoices',peso(47320),'3 branches · oldest 9 days')}${kpi('Branch POs waiting','3','1 needs approval today')}${kpi('Staff clocked in',onNow,'across '+branches.length+' branches')}</div>
   <div class="grid g2" style="margin-top:14px">
-   <div class="card"><h3>Branch performance (week)</h3><div class="bars">${branches.map(b=>`<div class="bar"><span>${b.n.split(',')[0].split(' ')[0]}</span><i><u style="width:${b.sales/max*100}%"></u></i><b class="mono" style="text-align:right">${peso(b.sales)}</b></div>`).join('')}</div></div>
+   <div class="card"><h3>Branch performance (week)</h3><div class="bars">${branches.map(b=>`<div class="bar"><span>${b.n.split(',')[0].replace(/^\d+ /,'').slice(0,16)}</span><i><u style="width:${b.sales/max*100}%"></u></i><b class="mono" style="text-align:right">${peso(b.sales)}</b></div>`).join('')}</div></div>
    <div class="card"><h3>System alerts</h3>
     <div class="alert"><span class="dot" style="background:var(--bad)"></span><div><b>Ana Cruz did not time out</b> yesterday<br><small style="color:var(--muted)">Cainta · flagged for manager review</small></div></div>
-    <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>Invoice INV-0128 overdue</b> · Taytay Greenland ${peso(15720)}<br><small style="color:var(--muted)">Due Nov 10</small></div></div>
+    <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>Invoice INV-0128 overdue</b> · 20 WALTERMART TAYTAY ${peso(15720)}<br><small style="color:var(--muted)">Due Nov 10</small></div></div>
     <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>Low stock at HQ:</b> squid rings (frozen) · 18 kg left<br><small style="color:var(--muted)">Reorder point 40 kg</small></div></div>
-    <div class="alert"><span class="dot" style="background:var(--info)"></span><div><b>Pasig Kapitolyo</b> finished setup and is ready to open<br><small style="color:var(--muted)">Nov 19</small></div></div>
+    <div class="alert"><span class="dot" style="background:var(--info)"></span><div><b>45 PRIMARK KASIGLAHAN</b> finished setup and is ready to open<br><small style="color:var(--muted)">Nov 19</small></div></div>
    </div></div>`;
 }
 
@@ -410,30 +410,33 @@ function pEmp(){
 
 const brInfo={
  'Cainta, Sto. Niño':{addr:'Brgy. Sto. Niño, Cainta, Rizal',mgr:'Paolo Mendoza',ph:'8646-4195',open:'Mar 2023',hrs:'9 AM – 6 PM',own:'Company-owned'},
- 'Marikina Riverbanks':{addr:'Riverbanks Center, Marikina City',mgr:'Gina Torres',ph:'0917 555 0142',open:'Aug 2024',hrs:'10 AM – 9 PM',own:'Company-owned'},
- 'Antipolo Hinulugang':{addr:'Hinulugang Taktak Rd, Antipolo, Rizal',mgr:'Tessa Navarro',ph:'0917 555 0177',open:'Jan 2025',hrs:'10 AM – 8 PM',own:'Franchise'},
- 'Taytay Greenland':{addr:'Greenland Subd., Taytay, Rizal',mgr:'Noel Garcia',ph:'0917 555 0191',open:'Jun 2025',hrs:'9 AM – 7 PM',own:'Franchise'},
- 'Pasig Kapitolyo':{addr:'Brgy. Kapitolyo, Pasig City',mgr:'Ramon Flores',ph:'0917 555 0123',open:'Dec 2026',hrs:'10 AM – 9 PM',own:'Franchise'},
+ '13 RIVERBANKS':{addr:'Address to be added',mgr:'Gina Torres',ph:'0917 555 0142',open:'Aug 2024',hrs:'10 AM – 9 PM',own:'Company-owned'},
+ '16 ANTIPOLO':{addr:'Address to be added',mgr:'Tessa Navarro',ph:'0917 555 0177',open:'Jan 2025',hrs:'10 AM – 8 PM',own:'Franchise'},
+ '20 WALTERMART TAYTAY':{addr:'Address to be added',mgr:'Noel Garcia',ph:'0917 555 0191',open:'Jun 2025',hrs:'9 AM – 7 PM',own:'Franchise'},
+ '45 PRIMARK KASIGLAHAN':{addr:'Address to be added',mgr:'Ramon Flores',ph:'0917 555 0123',open:'Dec 2026',hrs:'10 AM – 9 PM',own:'Franchise'},
 };
+const realBranches=["01 GREEN LAND", "02 STA.LUCIA EAST GRAND MALL", "04 HERITAGE", "05 FAIRVIEW TERRACES", "06 EL CAMINO", "07 MARKET MARKET", "08 ST. VINCENT", "09 MEGAMALL", "10 LILAC", "11 ZABARTE", "12 UN SQUARE", "13 RIVERBANKS", "14 FESTIVAL ALABANG", "15 SM FAIRVIEW", "16 ANTIPOLO", "17 SM CUBAO", "18 ROBINSONS NOVA", "19 PUREGOLD DEPARO", "20 WALTERMART TAYTAY", "21 METRO PLAZA", "22 PUREGOLD Q PLAZA", "23 ARVO AYALA MALL MARIKINA", "24 CROSSROADS", "25 AYALA MALLS MANILA BAY", "26 CHOICE MARKET", "27 XENTROMALL MONTALBAN", "28 MARIKINA IVORY", "29 BAUAN BATANGAS", "30 SOUTH SUPERMARKET VALENZUELA", "31 GREENWOODS", "32 SM HYPERMARKET MARILAO", "33 SM HYPERMARKET EDSA CUBAO", "34 SM NORTH EDSA", "35 LANDMARK NUVALI", "36 THE OUTLET BATANGAS", "37 TAYSAN BATANGAS", "38 PUREGOLD TAYTAY", "39 SM VALENZUELA", "40 ROBINSONS GALLERIA", "41 PIONEER CENTRE", "42 SM ANGONO", "43 MONTALBAN TOWN CENTER", "44 SM CITY BACOLOD", "45 PRIMARK KASIGLAHAN", "46 PUREGOLD SHAW", "47 AYALA MALL FELIZ", "48 IMALL CANLUBANG", "49 SM NOVALICHEZ", "50 PEARL PLAZA", "51 FISHERMALL Q. AVE", "52 ARCOVIA", "53 LEAFMALL", "54 METRO SUPERMARKET", "55 PUREGOLD MERCEDES", "56 SM MANILA", "57 PUREGOLD SAN MATEO", "58 ARCASOUTH", "59 PUREGOLD SUCAT", "60 THE VEST CAVITE", "61 PREMIER PLAZA", "62 SM MARILAO", "63 RIVERBANKS XL", "64 PUREGOLD TAYUMAN", "65 GRAND TERMINAL BATANGAS", "66 PUREGOLD C. RAYMUNDO", "67 SM SORSOGON", "68 LUCKY GOLD", "69 UPAD - TAFT (KINGSVILLE) MANILA", "70 SM CALAMBA", "71 GMALL BUTUAN", "72 VICTORY MALL ANTIPOLO", "73 KCC ZAMBOANGA", "74 PUREGOLD SARIAYA", "75 WALTERMART BATANGAS", "76 SM CENTER MUNTINLUPA", "77 SM SUCAT", "78 KAI MALL", "79 WALTERMART NORTH EDSA", "80 SM SAN LAZARO", "81 AWOO MALL LAGUNA", "82 SM SUPERMARKET IMUS", "83 MAGIC STARMALL TARLAC", "84 VICTORY MALL TANAUAN", "85 STA. MARIA BULACAN", "86 STA. LUCIA", "87 KEMPMART CALOOCAN", "88 SM SUPERMARKET ROSARIO", "89 WALTERMART TANAUAN", "90 CLOVERLEAF", "91 PUREGOLD BINANGONAN", "92 GMALL TAGUM", "93 SM SUPERMARKET BATANGAS", "NEW FARMERS PLAZA"];
+const realList=realBranches.map((n,i)=>({n,sales:38000+((i*7919)%92000),st:n==='NEW FARMERS PLAZA'?'Opening soon':'Open'}));
 let brQ='';
 function pBr(){
-  const rows=branches.filter(b=>!brQ||b.n.toLowerCase().includes(brQ.toLowerCase()));
+  const q=brQ.toLowerCase();
+  const rows=[{n:'Cainta, Sto. Ni\u00f1o',sales:184200,st:'Open',demo:true},...realList].filter(b=>!q||b.n.toLowerCase().includes(q));
   const staff=n=>emps.filter(e=>e.br===n).length;
-  return head('Branch List','Create, edit and manage all branches','<button class="btn pri" data-t="New branch form opens">+ New branch</button>')+
-  `<div class="grid g4" style="margin-bottom:14px">${kpi('Branches',branches.length,branches.filter(b=>b.st==='Open').length+' open')}${kpi('Company-owned',branches.filter(b=>brInfo[b.n].own==='Company-owned').length,'run by HQ')}${kpi('Franchise',branches.filter(b=>brInfo[b.n].own==='Franchise').length,'franchisee-run')}${kpi('Staff in branches',emps.filter(e=>e.br!=='HQ').length,'with time in / time out')}</div>
-  <div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="brq" placeholder="Search branches" value="${brQ}" aria-label="Search branches" style="flex:1;min-width:200px"></div>
-  <div class="tw"><table><thead><tr><th>Branch</th><th>Address</th><th>Type</th><th>Manager</th><th>Hours</th><th class="num">Staff</th><th class="num">Sales (week)</th><th>Status</th><th></th></tr></thead><tbody>
-  ${rows.map(b=>{const i=brInfo[b.n];return `<tr><td><b>${b.n}</b><br><small style="color:var(--muted)">Since ${i.open} · ${i.ph}</small></td><td>${i.addr}</td><td><span class="chip ${i.own==='Franchise'?'c-info':'c-sea'}">${i.own}</span></td><td>${i.mgr}</td><td>${i.hrs}</td><td class="num">${staff(b.n)}</td><td class="num">${peso(b.sales)}</td><td><span class="chip ${b.st==='Open'?'c-good':'c-warn'}">${b.st}</span></td><td><button class="btn sm" data-t="Edit branch opens">Edit</button></td></tr>`}).join('')||'<tr><td colspan="9" style="color:var(--muted)">No branches match.</td></tr>'}
+  return head('Branch List','Create, edit and manage all branches. The names come from the branch order form.','<button class="btn pri" data-t="New branch form opens">+ New branch</button>')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Branches',realList.length,'on the order form')}${kpi('Open',realList.filter(b=>b.st==='Open').length,'trading now')}${kpi('Opening soon',realList.filter(b=>b.st!=='Open').length,'not yet trading')}${kpi('Staff with time in / out',emps.filter(e=>e.br!=='HQ').length,'in the demo branches')}</div>
+  <div class="card"><div class="row" style="margin-bottom:12px"><input class="field" id="brq" placeholder="Search by name or number" value="${brQ}" aria-label="Search branches" style="flex:1;min-width:200px"><span class="chip c-mute">${rows.length} shown</span></div>
+  <div class="tw"><table><thead><tr><th>Branch</th><th>Address</th><th>Type</th><th>Manager</th><th class="num">Staff</th><th class="num">Sales (week)</th><th>Status</th><th></th></tr></thead><tbody>
+  ${rows.map(b=>{const i=brInfo[b.n];return `<tr><td><b>${b.n}</b>${b.demo?' <span class="chip c-info">Demo branch</span>':''}</td><td>${i?i.addr:'\u2014'}</td><td>${i?`<span class="chip ${i.own==='Franchise'?'c-info':'c-sea'}">${i.own}</span>`:'\u2014'}</td><td>${i?i.mgr:'\u2014'}</td><td class="num">${staff(b.n)||'\u2014'}</td><td class="num">${peso(b.sales)}</td><td><span class="chip ${b.st==='Open'?'c-good':'c-warn'}">${b.st}</span></td><td><button class="btn sm" data-t="Edit branch opens">Edit</button></td></tr>`}).join('')||'<tr><td colspan="8" style="color:var(--muted)">No branches match.</td></tr>'}
   </tbody></table></div></div>`;
 }
 const members=[
- {n:'Rafael Dela Cruz',role:'Owner',br:'Antipolo Hinulugang',em:'raf@example.ph',last:'Today, 8:12 AM'},
- {n:'Anne Villaroman',role:'Owner',br:'Taytay Greenland',em:'anne@example.ph',last:'Yesterday, 6:40 PM'},
+ {n:'Rafael Dela Cruz',role:'Owner',br:'16 ANTIPOLO',em:'raf@example.ph',last:'Today, 8:12 AM'},
+ {n:'Anne Villaroman',role:'Owner',br:'20 WALTERMART TAYTAY',em:'anne@example.ph',last:'Yesterday, 6:40 PM'},
  {n:'Paolo Mendoza',role:'Manager',br:'Cainta, Sto. Niño',em:'cainta@captaincalamares.ph',last:'Today, 8:41 AM'},
- {n:'Gina Torres',role:'Manager',br:'Marikina Riverbanks',em:'marikina@captaincalamares.ph',last:'Today, 9:05 AM'},
- {n:'Tessa Navarro',role:'Manager',br:'Antipolo Hinulugang',em:'antipolo@captaincalamares.ph',last:'Nov 18, 5:50 PM'},
- {n:'Noel Garcia',role:'Manager',br:'Taytay Greenland',em:'taytay@captaincalamares.ph',last:'Nov 17, 4:15 PM'},
- {n:'Ramon Flores',role:'Manager',br:'Pasig Kapitolyo',em:'pasig@captaincalamares.ph',last:'Nov 15, 2:30 PM'},
+ {n:'Gina Torres',role:'Manager',br:'13 RIVERBANKS',em:'marikina@captaincalamares.ph',last:'Today, 9:05 AM'},
+ {n:'Tessa Navarro',role:'Manager',br:'16 ANTIPOLO',em:'antipolo@captaincalamares.ph',last:'Nov 18, 5:50 PM'},
+ {n:'Noel Garcia',role:'Manager',br:'20 WALTERMART TAYTAY',em:'taytay@captaincalamares.ph',last:'Nov 17, 4:15 PM'},
+ {n:'Ramon Flores',role:'Manager',br:'45 PRIMARK KASIGLAHAN',em:'pasig@captaincalamares.ph',last:'Nov 15, 2:30 PM'},
 ];
 function pMem(){
   return head('Branch Members','Owners and managers assigned to each branch','<button class="btn pri" data-t="Invite member opens">+ Invite member</button>')+
