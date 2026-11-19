@@ -240,6 +240,7 @@ td{border-bottom:1px solid var(--edge)}
 .shot{width:200px;height:200px;border-radius:18px;border:4px solid #fff;box-shadow:0 16px 36px rgba(0,0,0,.35);transform:rotate(-3deg);background-size:cover;background-position:center;margin-bottom:28px}
 .lform .btn.pri{box-shadow:none}
 .lform h1::after{content:none}
+.execbtn{background:#ffdf00;border-color:#e0bd00;color:#0b1f4d}
 .clk,.keys button{font-family:var(--f-body);font-weight:700}
 .clk{letter-spacing:-.01em}
 @media (max-width:860px){
@@ -272,6 +273,7 @@ td{border-bottom:1px solid var(--edge)}
         <button class="btn" type="button" data-demo="cainta@captaincalamares.ph">Sign in as Cainta branch manager</button>
         <button class="btn" type="button" data-demo="cashier@captaincalamares.ph">Sign in as cashier (POS only)</button>
         <button class="btn" type="button" data-demo="employee@captaincalamares.ph">Sign in as employee (time in / out only)</button>
+        <button class="btn" type="button" data-demo="executive@captaincalamares.ph">Sign in as executive (view only)</button>
       </div>
     </form>
   </section>
@@ -290,6 +292,7 @@ td{border-bottom:1px solid var(--edge)}
       <span class="chip c-sea" id="branchTag" hidden>Cainta, Sto. Niño</span>
       <span class="sp"></span>
       <span class="mono" id="topClock"></span>
+      <button class="themebtn execbtn" id="execBtn" hidden>Executive view</button>
       <button class="themebtn" id="themeBtn" aria-label="Toggle theme">Theme</button>
       <div class="who"><span class="av" id="av">HQ</span><span id="whoName">Head Office</span></div>
       <button class="themebtn" id="signOut">Sign out</button>
@@ -381,7 +384,7 @@ const prods = [
 ];
 
 /* ---------- State ---------- */
-let surface='admin', page='a-dash', role='admin'; // admin | manager | cashier | employee
+let surface='admin', page='a-dash', role='admin'; // admin | executive | manager | cashier | employee
 const adminNav=[
  ['Sales',[['a-dash','Dashboard']]],
  ['Branch',[['a-br','Branch List'],['a-mem','Branch Members'],['a-po','Branch PO','3'],['a-rec','Receivables'],['a-cust','Branch Customer'],['a-ann','Announcements'],['a-train','Training']]],
@@ -401,26 +404,27 @@ const branchNav=[
  ['Employees',[['b-clock','Time In / Time Out','NEW'],['b-emp','Employee List'],['b-att','Employee’s Report']]],
  ['Admin Tools',[['b-set','Settings'],['b-user','User Management']]],
 ];
-const live = new Set(['b-ord','b-ref','a-br','a-mem','a-prod','b-prod','a-dash','a-po','a-att','a-emp','b-dash','b-pos','b-clock','b-att','b-emp','b-po']);
+const live = new Set(['x-sum','b-ord','b-ref','a-br','a-mem','a-prod','b-prod','a-dash','a-po','a-att','a-emp','b-dash','b-pos','b-clock','b-att','b-emp','b-po']);
 
 function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 
 function renderNav(){
-  const nav = role==='cashier'?[['POS System',[['b-pos','Point of Sale'],['b-ord','Order List'],['b-ref','Refund Order']]]]:role==='employee'?[['Employees',[['b-clock','Time In / Time Out']]]]:surface==='admin'?adminNav:branchNav;
+  const nav = role==='executive'?[['Executive',[['x-sum','Executive Summary']]]]:role==='cashier'?[['POS System',[['b-pos','Point of Sale'],['b-ord','Order List'],['b-ref','Refund Order']]]]:role==='employee'?[['Employees',[['b-clock','Time In / Time Out']]]]:surface==='admin'?adminNav:branchNav;
   $('#nav').innerHTML = nav.map(([h,items])=>`<h6>${h}</h6>`+items.map(([id,l,b])=>
     `<button data-p="${id}" ${id===page?'aria-current="page"':''} class="${live.has(id)?'':'dim'}">${l}${b?`<span class="pill">${b}</span>`:''}</button>`).join('')).join('');
   $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.p));
-  $('#surfLabel').textContent = surface==='admin'?'HQ Admin':'Branch';
+  $('#surfLabel').textContent = role==='executive'?'Executive':surface==='admin'?'HQ Admin':'Branch';
   $('#sA').setAttribute('aria-pressed',surface==='admin');
   $('#sB').setAttribute('aria-pressed',surface==='branch');
   $('#branchTag').hidden = surface==='admin';
-  const who={admin:['HQ','Head Office'],manager:['PM','Paolo (Manager)'],cashier:['MS','Maria (Cashier)'],employee:['AC','Ana (Crew)']}[role];
+  const who={executive:['EX','Executive'],admin:['HQ','Head Office'],manager:['PM','Paolo (Manager)'],cashier:['MS','Maria (Cashier)'],employee:['AC','Ana (Crew)']}[role];
   $('#av').textContent = who[0];
   $('#whoName').textContent = who[1];
 }
 function go(p){pending=null;page=p;renderNav();render();$('#content').scrollTop=0}
 function setSurface(s){surface=s;go(s==='admin'?'a-dash':'b-dash')}
 $('#sA').onclick=()=>setSurface('admin'); $('#sB').onclick=()=>setSurface('branch');
+$('#execBtn').onclick=()=>go('x-sum');
 $('#themeBtn').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=dark?'light':'dark'};
 function tick(){$('#topClock').textContent=new Date().toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric'})+' · '+fmt(new Date());const c=$('#liveClock');if(c){const d=new Date();c.textContent=(d.getHours()%12||12)+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+' '+(d.getHours()<12?'AM':'PM')}}
 setInterval(tick,1000);
@@ -772,14 +776,33 @@ function pRef(){
   <div class="card">${right}${mm}</div></div>`;
 }
 
-const pages={'b-ord':pOrd,'b-ref':pRef,'a-br':pBr,'a-mem':pMem,'a-prod':pProd,'b-prod':pProd,'a-dash':pDashA,'a-po':pPO,'a-att':pAttA,'a-emp':pEmp,'b-dash':pDashB,'b-pos':pPOS,'b-clock':pClock,'b-att':pAttB,'b-emp':pEmp,'b-po':pPOB};
+
+const exChg={'Cainta, Sto. Ni\u00f1o':8.4,'13 RIVERBANKS':5.1,'16 ANTIPOLO':-3.2,'20 WALTERMART TAYTAY':12.0,'45 PRIMARK KASIGLAHAN':-6.5};
+const exFlag={'Cainta, Sto. Ni\u00f1o':'1 missing time out','20 WALTERMART TAYTAY':'Invoice overdue','16 ANTIPOLO':'Sales below last week'};
+function pExec(){
+  const rk=[...branches].sort((a,b)=>b.sales-a.sales);
+  return head('Executive Summary','The whole chain at a glance. Tap a branch name to open it.','<span class="chip c-info">View only</span><button class="btn" data-t="Weekly summary emailed (demo)">Email me weekly</button>')+
+  `<div class="grid g4" style="margin-bottom:14px">${kpi('Sales this week',peso(619450),'<span class="up">\u25b2 8.4%</span> vs last week')}${kpi('Sales today',peso(64980),'across 5 branches trading')}${kpi('Money owed to HQ',peso(184500),peso(47320)+' overdue')}${kpi('Waiting for approval','3','branch orders \u00b7 1 refund')}</div>
+  <div class="grid g2"><div class="card"><h3>Sales, last 7 days</h3>${salesChart()}<p style="color:var(--muted);margin:8px 0 0;font-size:12.5px">Refunds this week ${peso(4120)} (0.7% of sales) \u00b7 Discounts ${peso(9860)}</p></div>
+  <div class="card"><h3>Needs attention</h3>
+   <div class="alert"><span class="dot" style="background:var(--bad)"></span><div><b>Invoice INV-0128 is 9 days overdue</b><br><small style="color:var(--muted)">20 WALTERMART TAYTAY \u00b7 ${peso(15720)}</small></div></div>
+   <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>3 branch orders waiting for approval</b><br><small style="color:var(--muted)">oldest sent yesterday</small></div></div>
+   <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>Low stock at HQ:</b> squid rings (frozen), 18 kg left<br><small style="color:var(--muted)">Reorder point 40 kg</small></div></div>
+   <div class="alert"><span class="dot" style="background:var(--warn)"></span><div><b>1 employee did not time out yesterday</b><br><small style="color:var(--muted)">Cainta, Sto. Ni\u00f1o</small></div></div>
+   <div class="alert"><span class="dot" style="background:var(--info)"></span><div><b>45 PRIMARK KASIGLAHAN</b> is ready to open<br><small style="color:var(--muted)">setup finished Nov 19</small></div></div></div></div>
+  <div class="card tw" style="margin-top:14px"><h3>Branch ranking this week</h3><table><thead><tr><th>#</th><th>Branch</th><th class="num">Sales</th><th class="num">vs last week</th><th>Flags</th></tr></thead><tbody>
+  ${rk.map((b,i)=>{const c=exChg[b.n]||0;return `<tr><td>${i+1}</td><td><button class="btn sm" data-xb="${b.n}">${b.n}</button></td><td class="num">${peso(b.sales)}</td><td class="num ${c>=0?'up':'down'}">${c>=0?'\u25b2':'\u25bc'} ${Math.abs(c)}%</td><td>${exFlag[b.n]?`<span class="chip c-warn">${exFlag[b.n]}</span>`:'<span class="chip c-good">On track</span>'}</td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+const pages={'x-sum':pExec,'b-ord':pOrd,'b-ref':pRef,'a-br':pBr,'a-mem':pMem,'a-prod':pProd,'b-prod':pProd,'a-dash':pDashA,'a-po':pPO,'a-att':pAttA,'a-emp':pEmp,'b-dash':pDashB,'b-pos':pPOS,'b-clock':pClock,'b-att':pAttB,'b-emp':pEmp,'b-po':pPOB};
 function render(){$('#content').innerHTML=(pages[page]||pSoon)();tick();if(pending&&page==='b-clock')attachCam();else stopCam()}
 
 /* ---------- Events (delegated) ---------- */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-t],[data-go],[data-ap],[data-cat],[data-add],[data-q],[data-ot],[data-clear],[data-charge],[data-k],[data-tg],[data-vo],[data-vx],[data-rf],[data-rs],[data-rl],[data-rm],[data-rfgo],[data-of],[data-cam],[data-np],[data-npgo]');
+  const t=e.target.closest('[data-t],[data-go],[data-ap],[data-cat],[data-add],[data-q],[data-ot],[data-clear],[data-charge],[data-k],[data-tg],[data-vo],[data-vx],[data-rf],[data-rs],[data-rl],[data-rm],[data-rfgo],[data-of],[data-cam],[data-np],[data-npgo],[data-xb]');
   if(!t)return;
   const d=t.dataset;
+  if(d.xb){toast('Opens the branch dashboard for '+d.xb+' (view only)');return}
   if('np' in d){npOpen=!npOpen;render();return}
   if('npgo' in d){
     const err=$('#npErr'),date=$('#npDate').value;
@@ -845,19 +868,21 @@ function key(k){
 /* ---------- Login (prototype only: any password works) ---------- */
 function signIn(email){
   const e=email.toLowerCase();
-  role=e.startsWith('admin')?'admin':e.startsWith('cashier')?'cashier':e.startsWith('employee')?'employee':'manager';
+  role=e.startsWith('admin')?'admin':e.startsWith('executive')?'executive':e.startsWith('cashier')?'cashier':e.startsWith('employee')?'employee':'manager';
   $('#login').hidden=true;
-  $('#surfSeg').hidden=role!=='admin'; /* only HQ can switch; branch accounts never see the Admin menu */
+  $('#surfSeg').hidden=role!=='admin';
+  $('#execBtn').hidden=!(role==='admin'||role==='executive'); /* only HQ can switch; branch accounts never see the Admin menu */
   if(role==='admin'||role==='manager')setSurface(role==='admin'?'admin':'branch');
+  else if(role==='executive'){surface='admin';go('x-sum')}
   else{surface='branch';go(role==='cashier'?'b-pos':'b-clock')}
-  toast('Signed in as '+{admin:'HQ admin',manager:'Cainta manager',cashier:'cashier',employee:'employee'}[role]);
+  toast('Signed in as '+{admin:'HQ admin',executive:'executive',manager:'Cainta manager',cashier:'cashier',employee:'employee'}[role]);
 }
 $('#loginForm').addEventListener('submit',e=>{
   e.preventDefault();
   const em=$('#lEmail').value.trim(),pw=$('#lPass').value;
   if(!em||!/^\S+@\S+\.\S+$/.test(em)){$('#lErr').textContent='Enter your email address.';$('#lEmail').focus();return}
   if(!pw){$('#lErr').textContent='Enter your password.';$('#lPass').focus();return}
-  if(!/^(admin|cainta|cashier|employee)/i.test(em)){$('#lErr').textContent='We could not find that account. Try a demo account below.';return}
+  if(!/^(admin|executive|cainta|cashier|employee)/i.test(em)){$('#lErr').textContent='We could not find that account. Try a demo account below.';return}
   $('#lErr').textContent='';signIn(em);
 });
 document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>signIn(b.dataset.demo));
